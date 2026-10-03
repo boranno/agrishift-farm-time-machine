@@ -1,300 +1,50 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AgriShift — The Farm Time Machine</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0B192C;--card:#1E293B;--bd:#334155;--g:#10B981;--c:#06B6D4;--a:#EA580C;--t:#E8EEF6;--m:#94A3B8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*,*:before,*:after{box-sizing:inherit}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--t);font:400 15px/1.5 Inter,"Noto Sans Bengali",system-ui,sans-serif}
-.w{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
-h1{font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em;margin:0}
-h1 span{color:var(--g)}
-h2{font-size:19px;margin:0 0 4px}
-p{margin:0}.m{color:var(--m);font-size:13px}
-.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.pill,button,select,input{font:inherit;color:var(--t)}
-.pill,.btn{background:var(--card);border:1px solid var(--bd);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px}
-.pill.on,.btn.on{background:var(--g);border-color:var(--g);color:#04231a;font-weight:600}
-.btn:hover{border-color:var(--c)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--c);outline-offset:2px}
-.sec{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-top:20px}
-.grid{display:grid;gap:16px}.g2{grid-template-columns:1.3fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
-@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-label{display:block;font-size:12px;color:var(--m);margin-bottom:3px}
-input[type=number],select{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px}
-input[type=range]{width:100%;accent-color:var(--g)}
-.f{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.map{background:#0e2238;border:1px solid var(--bd);border-radius:12px;width:100%;height:auto;display:block}
-.pt{cursor:pointer;transition:r .2s}.pt:hover{stroke:#fff;stroke-width:2}
-.big{font-size:26px;font-weight:800}
-.tel{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:12px}
-.rc{background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
-.rc.top{border-color:var(--g);box-shadow:0 0 0 1px var(--g)}
-.score{font-size:34px;font-weight:800;color:var(--g)}
-.bar{height:6px;background:var(--bd);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g);transition:width .35s}
-.bd{display:inline-block;font-size:12px;border-radius:6px;padding:2px 8px;margin:0 4px 4px 0;border:1px solid}
-.bd.g{color:var(--g);border-color:var(--g)}.bd.c{color:var(--c);border-color:var(--c)}.bd.a{color:var(--a);border-color:var(--a)}
-table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 4px;border-bottom:1px solid var(--bd);text-align:left}
-.al{border-radius:8px;padding:8px 10px;font-size:13px;border:1px solid var(--c);color:var(--c)}
-.al.w{border-color:var(--a);color:#fdba74;background:#ea580c1a}
-.eq{display:inline-flex;gap:3px;align-items:flex-end;height:14px;vertical-align:middle;margin-left:6px}
-.eq i{width:3px;background:var(--c);animation:e .7s infinite alternate}.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}
-@keyframes e{from{height:3px}to{height:14px}}
-@media(prefers-reduced-motion:reduce){.eq i{animation:none;height:10px}.bar i{transition:none}}
-.dr{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--card);border-left:1px solid var(--bd);padding:calc(20px + env(safe-area-inset-top,0px)) 20px 20px;overflow:auto;transform:translateX(105%);transition:transform .3s;z-index:9}
-.dr.o{transform:none}
-.dr h3{margin:16px 0 4px;font-size:14px;color:var(--c)}
-.dr li{margin:3px 0;font-size:13px}.dr ul{padding-left:18px;margin:0}
-code{background:var(--bg);border-radius:6px;padding:6px 8px;display:block;font-size:12px;margin:4px 0;overflow-x:auto}
-.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--m)}
-.flow b{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:4px 8px;color:var(--t);font-weight:600}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--c);color:#032a33;padding:8px 16px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .25s;z-index:10;pointer-events:none}
-</style></head><body><div class="w">
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>AgriShift project versions</title>
+	<style>
+		:root{color-scheme:dark;--bg:#10231c;--panel:#18362b;--text:#f1f5ec;--muted:#b5c8bc;--accent:#a8e063}
+		*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#244b38,var(--bg) 65%);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+		main{width:min(960px,calc(100% - 32px));margin:auto;padding:64px 0}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.05;margin:0 0 12px;letter-spacing:-.04em}p{color:var(--muted)}.eyebrow{color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{display:block;padding:20px;border:1px solid #ffffff20;border-radius:14px;background:var(--panel);color:var(--text);text-decoration:none;transition:border-color .2s ease}.card:hover,.card:focus-visible{border-color:var(--accent);outline:none}.card strong,.card span{display:block}.card strong{font-size:1.05rem}.card span{color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}
+	</style>
+</head>
+<body>
+	<main>
+		<p class="eyebrow">AgriShift</p>
+		<h1>Project pages</h1>
+		<p>Explore the current AgriShift project versions.</p>
+		<section id="pages" class="grid" aria-label="Project pages"></section>
+	</main>
+	<script>
+		const pages = [
+			{ name: 'Version 1', href: './version-1.html' },
+			{ name: 'Version 2', href: './version-2.html' },
+			{ name: 'Version 3', href: './version-3.html' },
+			{ name: 'Version 4', href: './version-4.html' },
+			{ name: 'Version 5', href: './version-5.html' },
+			{ name: 'Version 6', href: './version-6.html' },
+			{ name: 'Version 7', href: './version-7.html' },
+			{ name: 'Version 8', href: './version-8.html' }
+		];
 
-<header>
-<h1>AgriShift — <span>The Farm Time Machine</span></h1>
-<p class="m" style="margin-top:6px" data-i="sub">Team Daydreammer | Khulna Local Event | Challenge: Field Shift (Adapting Farms with NASA Data)</p>
-<p style="margin-top:10px;font-size:17px" data-i="tag">Explore your farm's future before you plant it.</p>
-<div class="pills">
-<span><button class="pill on" id="len">English</button> <button class="pill" id="lbn">বাংলা</button></span>
-<button class="pill" id="voice">🎙️ Bangla Speech Entry</button>
-<span class="pill" style="cursor:default">🟢 OFFLINE=1 (Cached NASA Fixtures Active)</span>
-</div>
-<div class="flow" style="margin-top:14px"><b>NASA SMAP · GPM · POWER · MODIS</b>→<b>Regional baseline</b>→<b>Your lab soil card</b>→<b>Deterministic engine</b>→<b>Rotations + evidence</b></div>
-</header>
+		const list = document.getElementById('pages');
+		pages.forEach(page => {
+			const link = document.createElement('a');
+			link.className = 'card';
+			link.href = page.href;
+			link.title = page.name;
 
-<section class="sec">
-<h2 data-i="s1">🗺️ Interactive Topsoil Salinity &amp; Climate Impact Map</h2>
-<p class="m">MIT DST model map (Eltahir group, MIT) drawn over a base map: ML-projected peak dry-season ECe, SSP5-8.5, 5-year steps 2025-2050. Press play or drag the timeline, click any coloured land to read the value there, and confirm it in the MIT viewer.</p><div class="row"><a class="btn on" href="https://www.mit.edu/~eltahirgroup/DST_SoilSalinity/index.html" target="_blank" rel="noopener">Open MIT DST Soil Salinity viewer ↗</a></div>
-<div class="row"><button class="btn on" id="vl">Local Delta (Khulna 187 Zenodo Points)</button><button class="btn" id="vg">Global Delta Analogs</button></div>
-<div class="grid g2">
-<div>
-<div id="mitwrap">
-<div class="mctl">
-<button class="btn on" id="mplay" aria-label="Play timeline" title="Play / pause timeline">&#9654;</button>
-<label>Dataset <select id="mds"></select></label>
-<label>Opacity <input type="range" id="mop" min="0" max="1" step="0.05" value="0.8"></label>
-<button class="btn" id="mcal" style="padding:5px 12px">Calibrate overlay</button>
-</div>
-<div id="mit" role="application" aria-label="MIT projected soil salinity map"></div>
-<div class="mleg"><div class="m" style="font-size:12px">Soil salinity, peak dry-season ECe (dS/m)</div><div class="bar" id="mbar"></div><div class="lb"><span>4</span><span>7.5</span><span>11</span><span>14.5</span><span>18</span></div></div>
-<div id="mcalp" style="display:none">
-<label>South lat<input type="number" step="0.01" id="cb0"></label><label>West lon<input type="number" step="0.01" id="cb1"></label>
-<label>North lat<input type="number" step="0.01" id="cb2"></label><label>East lon<input type="number" step="0.01" id="cb3"></label>
-</div>
-<p class="m" id="mcaln" style="display:none;margin-top:6px">Overlay corners are estimated. Nudge them until the coastline in the MIT image lines up with the base map, then copy the numbers into <code>MITCFG.bounds</code>. <b id="mcv"></b></p>
-</div>
-<svg class="map" viewBox="0 0 400 260" id="svg" role="img" aria-label="Coastal salinity map"><path d="M0 170 C60 150 110 175 170 165 S300 190 400 150 V260 H0Z" fill="#0a3a5c" opacity=".7"/><path d="M0 0H400V150C300 190 240 165 170 165 S60 150 0 170Z" fill="#123a2c" opacity=".55"/><text x="12" y="245" fill="#7dd3fc" font-size="11">Bay of Bengal</text></svg>
-</div>
-<div>
-<div class="tel"><p class="m">Projected topsoil EC at selected point</p><div class="big" id="mecv">–</div><p id="mnote" class="m"></p></div>
-<div style="margin-top:14px"><label>Timeline: <b id="yr">2026 (Baseline)</b></label><input type="range" id="tl" min="0" max="5" step="1" value="0"><div class="row m" style="justify-content:space-between;margin:2px 0"><span>2025</span><span>2035</span><span>2050</span></div></div>
-<p class="m" style="margin-top:8px">Click the map or a place marker to read the projected value. Marker clicks also load that place into the soil panel below.</p><div class="tel" style="margin-top:10px"><label>ECe shown in the MIT viewer for your location (dS/m)</label><div class="row" style="margin:0"><input type="number" id="mitv" step="0.1" min="0" placeholder="e.g. 6.8" style="flex:1"><button class="btn" id="mitap">Use as soil EC</button></div><p class="m" style="margin-top:6px">MIT DST: ML-projected peak dry-season (Mar–Apr) ECe, SSP5-8.5, 5-year steps to 2050. Eltahir group, MIT.</p></div>
-</div></div></section>
+			const title = document.createElement('strong');
+			title.textContent = page.name;
 
-<section class="sec">
-<h2 data-i="s2">🌾 Local Field State &amp; Soil Data Panel</h2>
-<div class="row"><button class="btn on" id="ma">Mode A: Manual SRDI Soil Lab Card</button><button class="btn" id="mb">Mode B: ESP32 IoT Stream (Future)</button></div>
-<div id="pa"><div class="f">
-<div><label>District / Upazila</label><select id="dist"><option>Khulna</option><option>Satkhira</option><option>Bagerhat</option><option>Dacope</option><option>Koyra</option><option>Shyamnagar</option></select></div>
-<div><label>Soil Texture</label><select id="tex"><option>Saline Clay Loam</option><option>Silty Clay</option><option>Sandy Loam</option></select></div>
-<div><label>Soil Salinity / EC (dS/m)</label><input type="number" id="ec" value="4.5" step="0.1" min="0" max="20"></div>
-<div><label>Soil pH</label><input type="number" id="ph" value="7.2" step="0.1" min="3" max="10"></div>
-<div><label>N (mg/kg)</label><input type="number" id="n" value="120"></div>
-<div><label>P (mg/kg)</label><input type="number" id="p" value="18"></div>
-<div><label>K (mg/kg)</label><input type="number" id="k" value="150"></div>
-<div><label>Current soil EC status</label><div class="big" id="ecs">–</div></div>
-</div>
-<div class="row"><button class="btn" id="ocr">📷 Upload SRDI Test Card (OCR)</button><button class="btn" id="voice2">🎙️ Speak Values in Bangla</button></div></div>
-<div id="pb" style="display:none"><p class="al w" id="lst" style="margin-bottom:12px">⚪ No live probe connected. Showing a demo reading, not your field data.</p>
-<div class="grid g3"><div class="tel"><p class="m">Root-Zone Moisture</p><div class="big" id="lm">22%</div></div><div class="tel"><p class="m">Soil EC</p><div class="big" id="le">4.3 dS/m</div></div><div class="tel"><p class="m">Ambient Temp</p><div class="big" id="lt">31°C</div></div></div>
-<p class="m" id="lts" style="margin:6px 0">Source: demo fixture</p>
-<svg id="lspark" viewBox="0 0 400 50" class="map" style="height:50px"></svg>
-<div class="row"><button class="btn" id="lserial">🔌 Connect USB (Web Serial)</button><label class="btn" style="margin:0;color:var(--t)">📁 Load CSV/JSON log<input type="file" id="lfile" accept=".csv,.json,.txt" hidden></label></div>
-<div class="row"><input type="text" id="lurl" placeholder="http://192.168.1.104/data (needs the file hosted by you)" style="flex:1;min-width:220px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px"><button class="btn" id="lpoll">Start polling</button></div>
-<textarea id="lpaste" rows="2" placeholder='Paste a reading: {"moisture":22,"ec":4.3,"temp":31}' style="width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;color:var(--t);font:inherit"></textarea>
-<div class="row"><button class="btn" id="lapply">Apply pasted reading</button><button class="btn on" id="usep">Use live values in simulation</button></div></div>
-</section>
+			const url = document.createElement('span');
+			url.textContent = page.href;
 
-<section class="sec" style="border-color:var(--c)">
-<h2 data-i="s3">🔮 The Farm Time Machine (What-If Climate Simulator)</h2>
-<p class="m">Move any control. Every rotation below recalculates instantly.</p>
-<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:12px">
-<div><label>Monsoon Rainfall Shift: <b id="rv">-15%</b> (−30% drought ↔ +30% flood)</label><input type="range" id="rain" min="-30" max="30" value="-15"></div>
-<div><label>Salinity Stress Increase: <b id="sv">+1.5 dS/m</b></label><input type="range" id="sal" min="0" max="5" step="0.1" value="1.5"></div>
-<div><label>Water Availability</label><select id="wat"><option>Restricted</option><option selected>Moderate</option><option>Abundant</option></select></div>
-<div><label>Priority: <b id="pv">Balanced</b> (Soil Health ↔ Short-Term Yield)</label><input type="range" id="pri" min="0" max="100" value="50"></div>
-</div>
-<div class="row" style="margin-top:14px"><span class="m">Effective EC in simulation:</span><b class="big" id="eff">–</b><span id="effd" class="bd"></span></div>
-</section>
-
-<section class="sec">
-<h2>🛰️ NASA Earth Observation Context</h2>
-<p class="m" id="ncap"></p>
-<div class="row"><button class="btn on" data-n="rain">GPM rainfall</button><button class="btn" data-n="sm">SMAP moisture</button><button class="btn" data-n="tp">POWER temperature</button><button class="btn" data-n="nd">MODIS NDVI</button></div>
-<svg class="map" id="nsvg" viewBox="0 0 400 170" role="img" aria-label="NASA monthly climatology"></svg>
-<p class="m" style="margin-top:6px">Satellite context, not field measurements. SMAP is not a salinity sensor and NDVI is not evidence of salinity. Dashed line = baseline; solid = your rainfall-shift scenario.</p>
-</section>
-<section class="sec">
-<h2 data-i="s4">🌱 Feasible Multi-Season Crop Rotations</h2>
-<p class="m">Scores come from a transparent rule-based engine (illustrative thresholds, pending expert validation). AI only explains results.</p>
-<div class="grid g3" id="cards" style="margin-top:14px"></div>
-</section>
-</div>
-
-<aside class="dr" id="dr" aria-label="Evidence and provenance"><button class="btn" id="cl">Close ✕</button><div id="drb"></div></aside>
-<div id="toast"></div>
-
-<script>
-const $=id=>document.getElementById(id);
-const T={en:{sub:"Team Daydreammer | Khulna Local Event | Challenge: Field Shift (Adapting Farms with NASA Data)",tag:"Explore your farm's future before you plant it.",s1:"🗺️ Interactive Topsoil Salinity & Climate Impact Map",s2:"🌾 Local Field State & Soil Data Panel",s3:"🔮 The Farm Time Machine (What-If Climate Simulator)",s4:"🌱 Feasible Multi-Season Crop Rotations"},
-bn:{sub:"টিম ডেড্রিমার | খুলনা স্থানীয় ইভেন্ট | চ্যালেঞ্জ: ফিল্ড শিফট (নাসা ডেটায় কৃষির অভিযোজন)",tag:"রোপণের আগেই আপনার খামারের ভবিষ্যৎ দেখুন।",s1:"🗺️ মাটির লবণাক্ততা ও জলবায়ু প্রভাব মানচিত্র",s2:"🌾 মাঠের অবস্থা ও মাটির তথ্য",s3:"🔮 ফার্ম টাইম মেশিন (যদি-তাহলে জলবায়ু সিমুলেটর)",s4:"🌱 উপযোগী বহু-মৌসুমি ফসল আবর্তন"}};
-let lang='en';
-function setLang(l){lang=l;document.documentElement.lang=l=='bn'?'bn':'en';document.querySelectorAll('[data-i]').forEach(e=>e.textContent=T[l][e.dataset.i]);$('len').classList.toggle('on',l=='en');$('lbn').classList.toggle('on',l=='bn');render()}
-$('len').onclick=()=>setLang('en');$('lbn').onclick=()=>setLang('bn');
-function toast(m){const t=$('toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,2400)}
-const col=e=>e<2?'var(--g)':e<=4?'#F59E0B':'#EF4444';
-const lbl=e=>e<2?'Low risk':e<=4?'Moderate risk':'High risk';
-const TL=[[0,'2025 (Baseline)'],[.4,'2030'],[.8,'2035 (Monsoon Shift)'],[1.2,'2040'],[1.7,'2045'],[2.2,'2050 (High Salinity Scenario)']];
-const LOC=[['Khulna',150,95,4.5],['Satkhira',85,118,6.2],['Bagerhat',215,110,3.4],['Dacope',175,138,7.8],['Koyra',130,140,9.1],['Shyamnagar',60,150,8.4]];
-const GLB=[['Mekong (VN)',70,80,5.1],['Nile Delta (EG)',150,55,6.4],['Ganges-Brahmaputra',230,95,4.2],['Mississippi (US)',300,130,2.6],['Po Delta (IT)',330,60,3.8]];
-let view='l',sel=0;
-function drawSvg(){const s=$('svg');s.querySelectorAll('.g').forEach(x=>x.remove());const d=view=='l'?LOC:GLB,add=TL[$('tl').value][0];
-d.forEach((p,i)=>{const e=p[3]+add,g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','g');
-g.innerHTML=`<circle class="pt" cx="${p[1]}" cy="${p[2]}" r="${i==sel?13:9}" fill="${e>8?'#EF4444':e>4?'#EA580C':e>2?'#F59E0B':'#10B981'}" fill-opacity=".85" stroke="${i==sel?'#fff':'none'}" tabindex="0" role="button" aria-label="${p[0]} EC ${e.toFixed(1)}"/><text x="${p[1]}" y="${p[2]-15}" fill="#cbd5e1" font-size="10" text-anchor="middle">${p[0]}</text>`;
-const c=g.firstChild;c.onclick=c.onkeydown=ev=>{if(ev.type=='keydown'&&ev.key!='Enter')return;sel=i;if(view=='l'){$('ec').value=p[3];$('dist').value=p[0];toast(p[0]+': soil EC loaded ('+p[3]+' dS/m)')}render()};s.appendChild(g)});
-const p=d[Math.min(sel,d.length-1)],e=p[3]+add;$('mecv').textContent=e.toFixed(1)+' dS/m';$('mecv').style.color=col(e);
-$('mnote').textContent=p[0]+' · '+TL[$('tl').value][1]+' · modeled projection'+(e>8?' · intrusion range (EC > 8)':'')}
-/* ---- MIT DST soil-salinity overlay (Leaflet) ---- */
-const MITCFG={
- base:'https://www.mit.edu/~eltahirgroup/DST_SoilSalinity/data/', /* change to 'data/' after saving the PNGs next to this page */
- bounds:[[21.5,88.7],[23.6,91.6]], /* [[south,west],[north,east]] - estimated, use Calibrate overlay */
- years:[2025,2030,2035,2040,2045,2050],
- ds:{model:{label:'Model (MIT DST projection)',file:y=>'soil_salinity_'+y+'.png'}} /* add more datasets here: key:{label,file:y=>'name_'+y+'.png'} */
-};
-const RAMP=[[4,'#1c4d9b'],[6,'#2a6db5'],[7.5,'#1f9aa8'],[9,'#4caf50'],[10.5,'#b7cf3a'],[12,'#f6d33a'],[15,'#f28e1c'],[18,'#d7261e']];
-const LOCLL=[[22.845,89.540],[22.718,89.071],[22.651,89.786],[22.571,89.516],[22.343,89.313],[22.330,89.100]];
-const hex=h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));
-const RGB=[];(function(){for(let k=0;k<=140;k++){const v=4+k/10;let a=RAMP[0],b=RAMP[RAMP.length-1];for(let j=0;j<RAMP.length-1;j++)if(v>=RAMP[j][0]&&v<=RAMP[j+1][0]){a=RAMP[j];b=RAMP[j+1];break}
- const t=(v-a[0])/(b[0]-a[0]||1),ca=hex(a[1]),cb=hex(b[1]);RGB.push([v,ca.map((x,q)=>x+(cb[q]-x)*t)])}})();
-$('mbar').style.background='linear-gradient(90deg,'+RAMP.map(r=>r[1]+' '+((r[0]-4)/14*100).toFixed(1)+'%').join(',')+')';
-Object.keys(MITCFG.ds).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=MITCFG.ds[k].label;$('mds').appendChild(o)});
-const mapYear=()=>MITCFG.years[$('tl').value];
-const ovUrl=y=>MITCFG.base+MITCFG.ds[$('mds').value].file(y);
-let mp=null,ov=null,curUrl='',pick=null,pin=null,rt=0,warned=false,B=MITCFG.bounds.map(r=>r.slice());
-const smp={};
-function loadSmp(u){if(smp[u])return smp[u];return smp[u]=new Promise(res=>{const im=new Image();im.crossOrigin='anonymous';
- im.onload=()=>{try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0);x.getImageData(0,0,1,1);res({x,w:c.width,h:c.height})}catch(e){res(null)}};
- im.onerror=()=>res(null);im.src=u})}
-/* returns number (dS/m), null (no data at this spot) or undefined (image not readable in this browser) */
-async function sampleEC(ll,y){const s=await loadSmp(ovUrl(y));if(!s)return undefined;
- const P=q=>L.CRS.EPSG3857.project(L.latLng(q)),sw=P(B[0]),ne=P(B[1]),p=P(ll);
- const fx=(p.x-sw.x)/(ne.x-sw.x),fy=(ne.y-p.y)/(ne.y-sw.y);if(fx<0||fx>=1||fy<0||fy>=1)return null;
- const d=s.x.getImageData(Math.floor(fx*s.w),Math.floor(fy*s.h),1,1).data;if(d[3]<128)return null;
- let best=1e9,bv=null;RGB.forEach(r=>{const e=(d[0]-r[1][0])**2+(d[1]-r[1][1])**2+(d[2]-r[1][2])**2;if(e<best){best=e;bv=r[0]}});
- return best>6000?null:bv}
-function setPick(ll,i){pick={ll:L.latLng(ll),i:i==null?-1:i};if(pin)pin.setLatLng(pick.ll);else pin=L.circleMarker(pick.ll,{radius:9,color:'#fff',weight:3,fillColor:'#06B6D4',fillOpacity:.9}).addTo(mp)}
-async function refreshPick(){if(!pick)return;const t=++rt,y=mapYear(),v=await sampleEC(pick.ll,y);if(t!==rt)return;
- const nm=pick.i>=0?LOC[pick.i][0]:pick.ll.lat.toFixed(2)+', '+pick.ll.lng.toFixed(2),yl=TL[$('tl').value][1];
- if(typeof v==='number'){$('mecv').textContent='~'+v.toFixed(1)+' dS/m';$('mecv').style.color=col(v);$('mnote').textContent=nm+' \u00b7 '+yl+' \u00b7 read from MIT model map (approx.)'+(v>8?' \u00b7 intrusion range (EC > 8)':'');$('mitv').value=v.toFixed(1)}
- else if(v===null){$('mecv').textContent='\u2014';$('mecv').style.color='';$('mnote').textContent=nm+' \u00b7 no MIT data here (outside the modelled land area)'}
- else if(pick.i>=0){const e=LOC[pick.i][3]+TL[$('tl').value][0];$('mecv').textContent=e.toFixed(1)+' dS/m';$('mecv').style.color=col(e);$('mnote').textContent=nm+' \u00b7 '+yl+' \u00b7 illustrative value. This browser cannot read the MIT image pixels; read the value in the MIT viewer and type it below.'}
- else{$('mecv').textContent='\u2014';$('mecv').style.color='';$('mnote').textContent='Pixel reading is not available here (image served without CORS). Read the value in the MIT viewer and type it below.'}}
-function initMap(){if(mp)return true;if(!window.L)return false;
- mp=L.map('mit').setView([22.7,90.1],7);
- L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:12,attribution:'&copy; OpenStreetMap contributors &copy; CARTO | Overlay: MIT Eltahir Group DST Soil Salinity'}).addTo(mp);
- curUrl=ovUrl(2025);ov=L.imageOverlay(curUrl,B,{opacity:+$('mop').value,interactive:false}).addTo(mp);
- ov.on('error',()=>{if(!warned){warned=true;toast('MIT overlay image could not load (offline or blocked). Showing base map only.')}});
- LOC.forEach((p,i)=>{const m=L.circleMarker(LOCLL[i],{radius:7,color:'#fff',weight:2,fillColor:'#1d4ed8',fillOpacity:1}).addTo(mp);m.bindTooltip(p[0]);
-  m.on('click',async ev=>{L.DomEvent.stopPropagation(ev);sel=i;setPick(LOCLL[i],i);$('dist').value=p[0];const b=await sampleEC(LOCLL[i],2025);const e=typeof b==='number'?b:p[3];$('ec').value=e.toFixed(1);toast(p[0]+': soil EC loaded ('+e.toFixed(1)+' dS/m'+(typeof b==='number'?', MIT 2025':', illustrative')+')');render()})});
- mp.on('click',ev=>{setPick(ev.latlng,-1);refreshPick()});
- setPick(LOCLL[0],0);
- MITCFG.years.forEach(y=>{const im=new Image();im.src=ovUrl(y)});
- return true}
-function setBounds(){B=[[+$('cb0').value,+$('cb1').value],[+$('cb2').value,+$('cb3').value]];if(ov)ov.setBounds(L.latLngBounds(B));$('mcv').textContent='bounds:[['+B[0]+','+B[1]+'],['+B[2]+','+B[3]+']]';refreshPick()}
-function drawMap(){const ok=view=='l'&&initMap();$('mitwrap').style.display=ok?'':'none';$('svg').style.display=ok?'none':'';
- if(!ok){drawSvg();return}
- mp.invalidateSize();const u=ovUrl(mapYear());if(u!==curUrl){curUrl=u;ov.setUrl(u)}ov.setOpacity(+$('mop').value);refreshPick()}
-let tmr=null;
-$('mplay').onclick=()=>{if(tmr){clearInterval(tmr);tmr=null;$('mplay').innerHTML='&#9654;';return}$('mplay').innerHTML='&#10074;&#10074;';tmr=setInterval(()=>{$('tl').value=(+$('tl').value+1)%MITCFG.years.length;render()},1400)};
-$('mds').onchange=render;$('mop').oninput=()=>{if(ov)ov.setOpacity(+$('mop').value)};
-$('mcal').onclick=()=>{const p=$('mcalp'),n=$('mcaln'),h=p.style.display=='none';p.style.display=h?'grid':'none';n.style.display=h?'':'none';if(h){[0,1].forEach(k=>{$('cb'+k).value=B[0][k]});[0,1].forEach(k=>{$('cb'+(k+2)).value=B[1][k]});$('mcv').textContent='bounds:[['+B[0]+','+B[1]+'],['+B[2]+','+B[3]+']]'}};
-[0,1,2,3].forEach(k=>$('cb'+k).oninput=setBounds);
-$('vl').onclick=()=>{view='l';sel=0;$('vl').classList.add('on');$('vg').classList.remove('on');render()};
-$('vg').onclick=()=>{view='g';sel=0;$('vg').classList.add('on');$('vl').classList.remove('on');render()};
-$('ma').onclick=()=>{$('pa').style.display='';$('pb').style.display='none';$('ma').classList.add('on');$('mb').classList.remove('on')};
-$('mb').onclick=()=>{$('pb').style.display='';$('pa').style.display='none';$('mb').classList.add('on');$('ma').classList.remove('on')};
-
-$('ocr').onclick=()=>{$('ec').value=5.2;$('ph').value=7.6;$('n').value=95;$('p').value=14;$('k').value=130;toast('Demo card read (cached fixture). Please verify values.');render()};
-const R=[
-{id:0,name:'T. Aman Rice ➔ Mustard ➔ Mung Bean',tag:'Top Pick',tol:6,ph:[6,8.2],w:.5,leg:true,yd:.5,sh:.9,N:113,P:30,K:95,bn:'আমন ধান, সরিষা, তারপর মুগডাল। মুগডাল মাটিতে নাইট্রোজেন যোগ করে, তাই ইউরিয়া কম লাগে।'},
-{id:1,name:'BRRI Dhan 67 ➔ BARI Sarisha 14 ➔ Fallow',tag:'Balanced',tol:5,ph:[5.8,8],w:.55,leg:false,yd:.7,sh:.6,N:120,P:32,K:100,bn:'ব্রি ধান ৬৭, বারি সরিষা ১৪, এরপর জমি খালি রাখুন। সারের পরিমাণ মাঝারি।'},
-{id:2,name:'Salt-Tolerant Rice ➔ Sunflower ➔ Sesame',tag:'High Yield',tol:4.4,ph:[6,8],w:.8,leg:false,yd:.95,sh:.4,N:130,P:34,K:110,bn:'লবণসহিষ্ণু ধান, সূর্যমুখী ও তিল। ফলন বেশি, কিন্তু সেচের প্রয়োজন বেশি।'}];
-const S=()=>({ec:+$('ec').value,ph:+$('ph').value,n:+$('n').value,p:+$('p').value,k:+$('k').value,rain:+$('rain').value,sal:+$('sal').value,wat:$('wat').selectedIndex,pri:+$('pri').value,add:TL[$('tl').value][0],live:useLive&&live?live:null});
-function calc(r,s){const eff=s.ec+s.sal+s.add;let f=100;
-if(eff>r.tol)f-=(eff-r.tol)*14;else f-=Math.max(0,eff-r.tol+2)*1.5;
-if(s.ph<r.ph[0]||s.ph>r.ph[1])f-=10;
-const stress=Math.max(0,-s.rain)/30*r.w*14+Math.max(0,s.rain)/30*4;f-=stress;
-f-=[8,0,-3][s.wat]*r.w*(s.wat==0?1:-1)*(s.wat==0?1:1);
-const y=s.pri/100;f+=(y-.5)*10*(r.yd-r.sh);f=Math.max(30,Math.min(99,Math.round(f-(r.id==0?-0:0)+(r.id==0?6:r.id==1?3:0))));
-const cr=r.leg?20:0,dN=Math.max(0,Math.round(r.N-s.n*.4-cr)),dP=Math.max(0,Math.round(r.P-s.p*.8)),dK=Math.max(0,Math.round(r.K-s.k*.5));
-const m=(s.live?s.live.m+s.rain*.1-(s.sal+s.add)*1.2:30+s.rain*.3-eff*1.2)+[-3,0,3][s.wat]-r.w*2+1,days=Math.round(m-14);
-return{f,dN,dP,dK,cr,m:Math.round(m),days,eff}}
-function render(){const s=S();$('rv').textContent=(s.rain>0?'+':'')+s.rain+'%';$('sv').textContent='+'+s.sal.toFixed(1)+' dS/m';$('pv').textContent=s.pri<35?'Soil Health':s.pri>65?'Short-Term Yield':'Balanced';
-nasa();const eff=s.ec+s.sal+s.add;$('eff').textContent=eff.toFixed(1)+' dS/m';$('eff').style.color=col(eff);$('effd').textContent=lbl(eff);$('effd').style.cssText='color:'+col(eff)+';border-color:'+col(eff);
-$('yr').textContent=TL[$('tl').value][1];$('ecs').textContent=s.ec.toFixed(1)+' · '+lbl(s.ec);$('ecs').style.color=col(s.ec);
-drawMap();
-const out=R.map(r=>({r,c:calc(r,s)})).sort((a,b)=>b.c.f-a.c.f);
-$('cards').innerHTML=out.map(({r,c},i)=>{const w=c.m<=14,nm=r.name.split(' ➔ ');
-return`<article class="rc ${i==0?'top':''}"><div class="row" style="margin:0;justify-content:space-between"><span class="bd ${i==0?'g':'c'}">${i==0?'Top Pick':r.tag}</span><span class="m">${nm.length} seasons</span></div>
-<div class="score">${c.f}%<span class="m" style="font-weight:400"> feasibility</span></div><div class="bar"><i style="width:${c.f}%"></i></div>
-<b>${r.name}</b>
-<div>${r.leg?`<span class="bd g">🌱 Legume N-Credit Applied (-20 kg N/ha)</span>`:''}<span class="bd ${c.eff>r.tol?'a':'c'}">🧂 Salinity Tolerant (EC &lt; ${r.tol})</span>${c.eff>r.tol?`<span class="bd a">Exceeds tolerance at EC ${c.eff.toFixed(1)}</span>`:''}</div>
-<table><tr><th>Net dose</th><th>kg/ha</th></tr><tr><td>Nitrogen</td><td>${c.dN}</td></tr><tr><td>Phosphorus</td><td>${c.dP}</td></tr><tr><td>Potassium</td><td>${c.dK}</td></tr></table>
-<div class="al ${w?'w':''}">${w?'⚠️ Wilting Point Alert: Root moisture at '+c.m+'%. Irrigate now.':'💧 Wilting Point Alert: Root moisture at '+c.m+'%. Trigger irrigation in '+c.days+' days.'}</div>
-<div class="row" style="margin:0"><button class="btn" data-l="${r.id}">🔊 Listen Rationale (Bangla)<span class="eq" hidden><i></i><i></i><i></i></span></button><button class="btn" data-e="${r.id}">📖 View Evidence &amp; Provenance</button></div>
-<div class="row m" style="margin:0"><span class="bd c">NASA SMAP</span><span class="bd c">NASA GPM</span><span class="bd c">NASA POWER</span><span class="bd c">NASA MODIS</span></div></article>`}).join('');
-document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>listen(b));
-document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>drawer(+b.dataset.e))}
-function listen(b){const r=R[b.dataset.l],q=b.querySelector('.eq');q.hidden=false;
-if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(r.bn);u.lang='bn-BD';u.onend=()=>q.hidden=true;speechSynthesis.cancel();speechSynthesis.speak(u)}
-setTimeout(()=>q.hidden=true,6000);toast(lang=='bn'?'শোনানো হচ্ছে…':'Playing Bangla summary (needs a Bangla voice on this device)')}
-function drawer(id){const r=R[id],s=S(),c=calc(r,s);
-$('drb').innerHTML=`<h2 style="margin-top:14px">Evidence &amp; Provenance</h2><p class="m">${r.name}</p>
-<h3>Net NPK formula (this run)</h3><code>Net Deficit = Crop Need − (Measured Soil NPK + Legume Credit)</code><code>N: ${r.N} − (${s.n} × 0.4 + ${c.cr}) = ${c.dN} kg/ha</code><code>P: ${r.P} − (${s.p} × 0.8) = ${c.dP} kg/ha<br>K: ${r.K} − (${s.k} × 0.5) = ${c.dK} kg/ha</code>
-<h3>NASA datasets (satellite / model, not field measurements)</h3><ul><li>NASA SMAP — soil moisture (not a salinity sensor)</li><li>GPM IMERG — rainfall</li><li>NASA POWER — daily climate series</li><li>MODIS — NDVI greenness (not evidence of salinity)</li></ul>
-<h3>Local datasets</h3><ul><li>SRDI Khulna soil surveys — regional reference/baseline data</li><li>Zenodo coastal topsoil salinity samples (187 points)</li><li>MIT DST Soil Salinity viewer (Eltahir group) — ML-projected peak dry-season ECe, SSP5-8.5. Shown as an image overlay from the MIT server. The value at a clicked point is read from the image colours (approximate, about +/-1 dS/m); confirm it in the MIT viewer.</li><li>Your entered lab values / live probe — measured</li></ul>
-<h3>Data type legend</h3><ul><li>Measured: your soil card</li><li>Observed: NASA products</li><li>Modeled: timeline EC, root moisture</li><li>Assumed: nutrient factors, tolerances</li></ul>
-<h3>References</h3><ul><li>FAO crop salinity tolerance and crop water guidance</li><li>BARI / BRRI rotation and variety literature</li></ul>
-<p class="al w" style="margin-top:14px">Thresholds and the −20 kg N/ha credit are illustrative and must be validated by agronomy experts before field use.</p>`;$('dr').classList.add('o');$('cl').focus()}
-$('cl').onclick=()=>$('dr').classList.remove('o');
-document.addEventListener('keydown',e=>{if(e.key=='Escape')$('dr').classList.remove('o')});
-function voice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('Speech input is not supported in this browser. Type the values instead.');return}
-const r=new SR();r.lang='bn-BD';r.onresult=e=>toast('Heard: '+e.results[0][0].transcript+' — enter numbers manually to confirm');r.onerror=()=>toast('Could not hear you. Check microphone permission.');toast('Listening in Bangla…');r.start()}
-$('voice').onclick=$('voice2').onclick=voice;
-document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
-$('tl').oninput=render;
-
-let live=null,useLive=false,hist=[],nk='rain',poll;
-function ingest(o,src){const m=+(o.moisture??o.moist),e=+(o.ec??o.EC),t=+(o.temp??o.temperature);if([m,e,t].some(isNaN))return false;live={m,e,t};hist.push(e);if(hist.length>40)hist.shift();$('lm').textContent=m+'%';$('le').textContent=e+' dS/m';$('lt').textContent=t+'°C';$('lts').textContent='Source: '+src+' · '+new Date().toLocaleTimeString();$('lst').className='al';$('lst').textContent='🟢 Live reading received';const mx=Math.max(...hist,1),mn=Math.min(...hist,0);$('lspark').innerHTML='<polyline fill="none" stroke="#06B6D4" stroke-width="2" points="'+hist.map((v,i)=>(i*400/Math.max(hist.length-1,1))+','+(45-(v-mn)/(mx-mn||1)*40)).join(' ')+'"/>';if(useLive){$('ec').value=e;render()}return true}
-$('lapply').onclick=()=>{try{ingest(JSON.parse($('lpaste').value),'pasted')?toast('Reading applied'):toast('Need moisture, ec and temp fields')}catch(e){toast('That is not valid JSON')}};
-$('usep').onclick=()=>{if(!live)return toast('No live reading yet. Connect a probe or paste a reading first.');useLive=true;$('ec').value=live.e;toast('Simulation now uses your live probe');render()};
-$('lfile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();let rows=[];try{const j=JSON.parse(t);rows=Array.isArray(j)?j:[j]}catch{const L=t.trim().split(/\r?\n/),H=L[0].split(',').map(x=>x.trim());rows=L.slice(1).map(l=>{const c=l.split(',');const o={};H.forEach((h,i)=>o[h]=c[i]);return o})}
-let ok=0;rows.forEach(r=>{if(ingest(r,f.name))ok++});toast(ok?ok+' readings loaded':'No valid rows. Columns needed: moisture, ec, temp')};
-$('lserial').onclick=async()=>{if(!navigator.serial)return toast('Web Serial is not available here. Use Chrome on a hosted copy, or paste/load a log.');try{const port=await navigator.serial.requestPort();await port.open({baudRate:115200});const rd=port.readable.pipeThrough(new TextDecoderStream()).getReader();let buf='';toast('Probe connected');for(;;){const{value,done}=await rd.read();if(done)break;buf+=value;let i;while((i=buf.indexOf('\n'))>=0){const l=buf.slice(0,i).trim();buf=buf.slice(i+1);try{ingest(JSON.parse(l),'USB serial')}catch{}}}}catch(e){toast('Serial connection failed or was cancelled')}};
-$('lpoll').onclick=()=>{clearInterval(poll);const u=$('lurl').value.trim();if(!u)return toast('Enter your probe URL');const go=()=>fetch(u).then(r=>r.json()).then(o=>ingest(o,'HTTP')).catch(()=>{clearInterval(poll);toast('Cannot reach the probe. Published pages block outside network calls; open a copy hosted by you.')});go();poll=setInterval(go,5000)};
-$('mitap').onclick=()=>{const v=parseFloat($('mitv').value);if(isNaN(v))return toast('Enter the ECe value from the MIT panel');$('ec').value=v;toast('MIT value loaded as soil EC');render()};
-const ND={rain:{n:'NASA GPM IMERG — monthly rainfall (mm)',bar:1,d:[10,25,50,90,200,320,360,330,260,150,30,8]},sm:{n:'NASA SMAP — surface soil moisture (%)',d:[22,20,18,17,24,34,40,41,39,34,28,24]},tp:{n:'NASA POWER — air temperature (°C)',d:[19,22,27,30,30,29,29,29,29,28,24,20]},nd:{n:'NASA MODIS — NDVI greenness',d:[.45,.42,.38,.35,.4,.55,.68,.72,.7,.62,.55,.5]}};
-function nasa(){const o=ND[nk],sh=+$('rain').value;let d=o.d.slice();if(nk=='rain')d=d.map(v=>v*(1+sh/100));else if(nk=='sm')d=d.map(v=>v+sh*.12);
-const all=o.d.concat(d),mx=Math.max(...all)*1.1,mn=o.bar?0:Math.min(...all)*.9,H=170,x=i=>30+i*(360/11),y=v=>H-22-(v-mn)/(mx-mn)*(H-42),M='JFMAMJJASOND';
-let h=`<rect x="${x(2)-14}" y="8" width="${x(3)-x(2)+28}" height="${H-30}" fill="#EA580C" opacity=".16"/><text x="${x(2)-12}" y="20" fill="#fdba74" font-size="9">Mar–Apr: MIT peak-salinity months</text>`;
-if(o.bar)h+=d.map((v,i)=>`<rect x="${x(i)-9}" y="${y(v)}" width="18" height="${H-22-y(v)}" fill="#06B6D4" opacity=".85"/>`).join('')+`<polyline fill="none" stroke="#94A3B8" stroke-dasharray="4" points="${o.d.map((v,i)=>x(i)+','+y(v)).join(' ')}"/>`;
-else h+=`<polyline fill="none" stroke="#94A3B8" stroke-dasharray="4" points="${o.d.map((v,i)=>x(i)+','+y(v)).join(' ')}"/><polyline fill="none" stroke="#06B6D4" stroke-width="2.5" points="${d.map((v,i)=>x(i)+','+y(v)).join(' ')}"/>`;
-h+=[...M].map((c,i)=>`<text x="${x(i)}" y="${H-6}" fill="#94A3B8" font-size="10" text-anchor="middle">${c}</text>`).join('')+`<text x="4" y="${y(mx/1.1)+3}" fill="#94A3B8" font-size="9">${(mx/1.1).toFixed(o.bar?0:1)}</text>`;
-$('nsvg').innerHTML=h;$('ncap').textContent=o.n+' · cached demo fixture for coastal SW Bangladesh, not a live NASA pull'}
-document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{nk=b.dataset.n;document.querySelectorAll('[data-n]').forEach(x=>x.classList.toggle('on',x==b));nasa()});
-render();
-</script></body></html>
+			link.append(title, url);
+			list.appendChild(link);
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgriShift — The Farm Time Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F2A;--forest:#164A3A;--teal:#168C87;--paper:#F5F4EE;--sand:#D9C7A3;--amber:#E7A93B;--red:#C85C55;
+--bg:var(--paper);--ink:#0B1F2A;--mute:#4d5f68;--card:#fff;--line:#0b1f2a1f;--data:var(--navy);--data-ink:#e8efe9;--data-mute:#8fa5ad;
+--h:'Sora','Noto Sans Bengali',system-ui,sans-serif;--b:'IBM Plex Sans','Noto Sans Bengali',system-ui,sans-serif;--m:'IBM Plex Mono',ui-monospace,monospace;
+--r:8px;--s1:4px;--s2:8px;--s3:16px;--s4:24px;--s5:40px;--s6:72px}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#08161e;--ink:#eef0e8;--mute:#93a7af;--card:#0e2a37;--line:#ffffff1f;--data:#06131a}}
+:root[data-theme=dark]{--bg:#08161e;--ink:#eef0e8;--mute:#93a7af;--card:#0e2a37;--line:#ffffff1f;--data:#06131a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--b);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3{font-family:var(--h);line-height:1.08;margin:0;letter-spacing:-.02em}
+h1{font-size:clamp(2.4rem,6vw,4.8rem);font-weight:700}h2{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:600}h3{font-size:1.1rem;font-weight:600;letter-spacing:0}
+p{margin:0;max-width:64ch}.mono{font-family:var(--m)}.mute{color:var(--mute)}
+a{color:inherit}:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 var(--s4)}
+/* nav */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--navy);color:#eef0e8}
+.nav{display:flex;align-items:center;gap:var(--s4);height:60px}
+.logo{font:700 1.15rem var(--h);text-decoration:none;display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo i{width:20px;height:20px;border:2px solid var(--amber);border-radius:50%;position:relative}
+.logo i:after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--teal)}
+.links{display:flex;gap:var(--s1)}
+.links a{padding:8px 12px;border-radius:var(--r);text-decoration:none;font-size:.92rem;color:#b9c9cd}
+.links a:hover,.links a[aria-current=page]{color:#fff;background:#ffffff14}
+.right{display:flex;align-items:center;gap:var(--s3)}
+.lang{display:flex;border:1px solid #ffffff33;border-radius:var(--r);overflow:hidden}
+.lang button{background:none;border:0;color:#b9c9cd;padding:5px 10px;font:500 .8rem var(--b);cursor:pointer}
+.lang button[aria-pressed=true]{background:#ffffff1f;color:#fff}
+.demo{display:flex;align-items:center;gap:8px;font:500 .74rem var(--m);letter-spacing:.06em;color:var(--amber);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:860px){.nav{flex-wrap:wrap;height:auto;padding:10px 0;gap:var(--s2) var(--s3)}.links{order:3;width:100%;overflow-x:auto}.demo span{display:none}}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:var(--r);font:600 .95rem var(--b);text-decoration:none;cursor:pointer;border:1px solid transparent;transition:background .2s}
+.btn-p{background:var(--forest);color:#fff}.btn-p:hover{background:#0f3a2d}
+.btn-s{background:none;border-color:var(--line);color:var(--ink)}.btn-s:hover{background:#0b1f2a0d}
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:6px;font:500 .72rem var(--m);letter-spacing:.04em;padding:3px 8px;border-radius:4px;border:1px solid var(--line);color:var(--mute);background:transparent}
+.badge.src{color:var(--teal);border-color:#168c8766}
+.badge.demo-l{color:#8a5f0a;border-color:#e7a93b99;background:#e7a93b1f}
+.badge.scen{color:#8a5f0a;border-color:var(--amber);background:#e7a93b2b}
+.badge.risk{color:var(--red);border-color:#c85c5580;background:#c85c5514}
+:root[data-theme=dark] .badge.demo-l,:root[data-theme=dark] .badge.scen{color:var(--amber)}
+.status{display:inline-flex;align-items:center;gap:8px;font:500 .78rem var(--m)}
+.status i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.st-live i{background:var(--teal)}.st-demo i{background:var(--amber)}.st-road i{background:none;border:1.5px dashed var(--mute)}
+/* layout blocks */
+section.blk{padding:var(--s6) 0;border-top:1px solid var(--line)}
+.sh{display:grid;gap:var(--s2);margin-bottom:var(--s4)}
+.grid{display:grid;gap:var(--s3);grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:var(--s4)}
+.dark-panel{background:var(--data);color:var(--data-ink);border-radius:var(--r);padding:var(--s4)}
+.dark-panel .mute{color:var(--data-mute)}
+.metric .val{font:500 2.4rem/1 var(--m);margin:var(--s3) 0 var(--s2)}
+.metric .val small{font-size:1rem;color:var(--mute)}
+.dark-panel .metric .val small{color:var(--data-mute)}
+.row{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
+/* hero */
+.hero{background:var(--navy);color:#eef0e8;padding:var(--s6) 0 var(--s5);position:relative;overflow:hidden}
+.hero .wrap{display:grid;gap:var(--s4)}
+.hero p{color:#b9c9cd;font-size:1.15rem}
+.hero .tag{font:500 1rem var(--m);color:var(--amber)}
+.rings{position:absolute;right:-120px;top:-120px;width:560px;height:560px;opacity:.5;pointer-events:none}
+/* slider + timeline */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--line);border-radius:2px;outline-offset:8px}
+.dark-panel input[type=range]{background:#ffffff33}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid var(--navy);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--amber);border:3px solid var(--navy);cursor:pointer}
+.ctl{display:grid;gap:var(--s3)}.ctl .top{display:flex;justify-content:space-between;align-items:baseline}
+.tl{display:flex;justify-content:space-between;font:400 .75rem var(--m);color:var(--data-mute);position:relative;padding-top:14px}
+.tl:before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:#ffffff33}
+.tl span{position:relative}.tl span:before{content:"";position:absolute;left:50%;top:-14px;width:1px;height:8px;background:#ffffff55}
+.tl span.on{color:var(--amber)}.tl span.on:before{background:var(--amber)}
+/* map container */
+.map{aspect-ratio:16/8;min-height:220px;border-radius:var(--r);background:var(--data);color:var(--data-mute);position:relative;overflow:hidden;display:grid;place-items:center;text-align:center;font:400 .85rem var(--m);
+background-image:linear-gradient(#ffffff0d 1px,transparent 1px),linear-gradient(90deg,#ffffff0d 1px,transparent 1px);background-size:40px 40px}
+.map .badge{position:absolute;left:12px;top:12px;color:var(--amber);border-color:#e7a93b66}
+/* rotation card */
+.rot .seq{display:flex;gap:6px;margin:var(--s3) 0}
+.rot .seq span{flex:1;padding:8px 4px;text-align:center;font:500 .78rem var(--m);border-radius:4px;background:#164a3a1a;color:var(--forest)}
+:root[data-theme=dark] .rot .seq span{color:#8fd1b8;background:#164a3a80}
+.rot .foot{display:flex;justify-content:space-between;align-items:center;margin-top:var(--s3)}
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--card);border-left:1px solid var(--line);z-index:40;padding:var(--s4);transform:translateX(102%);transition:transform .3s ease;overflow:auto;display:grid;align-content:start;gap:var(--s3)}
+.drawer.open{transform:none}
+.scrim{position:fixed;inset:0;background:#0b1f2a80;z-index:30;opacity:0;pointer-events:none;transition:opacity .3s}.scrim.open{opacity:1;pointer-events:auto}
+.x{justify-self:end;background:none;border:1px solid var(--line);color:var(--ink);border-radius:var(--r);padding:4px 10px;cursor:pointer}
+.stub{border:1px dashed var(--line);border-radius:var(--r);padding:var(--s4);display:grid;gap:var(--s2)}
+footer{background:var(--navy);color:#b9c9cd;padding:var(--s5) 0;font-size:.85rem}
+footer p{max-width:80ch}
+.view{animation:in .35s ease}@keyframes in{from{opacity:0}}
+
+/* ---- landing ---- */
+.hz{background:var(--navy);color:#eef0e8;position:relative;overflow:hidden;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:56px 56px}
+.hz .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:var(--s5);align-items:center;padding-top:var(--s6);padding-bottom:var(--s6);min-height:calc(100vh - 60px)}
+.hz h1{font-size:clamp(2.4rem,4.6vw,4.4rem)}.hz h1 span{display:block;animation:up .9s cubic-bezier(.2,.7,.2,1) both}.hz h1 span+span{animation-delay:.18s;color:var(--sand)}
+@keyframes up{from{opacity:0;transform:translateY(22px)}}
+.hz .sup{color:#b9c9cd;font-size:1.15rem;margin:var(--s4) 0;animation:up .9s .4s both}
+.hz .ctas{display:flex;flex-wrap:wrap;gap:var(--s3);animation:up .9s .6s both}
+.hz .kick{font:500 .78rem var(--m);color:var(--amber);letter-spacing:.06em;margin-bottom:var(--s3);display:flex;gap:10px;align-items:center;animation:up .9s both}
+.btn{position:relative;overflow:hidden;transition:transform .25s,background .25s,border-color .25s}
+.btn:hover{transform:translateY(-2px)}
+.btn:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,#ffffff2e 50%,transparent 65%);transform:translateX(-120%);transition:transform .6s}
+.btn:hover:after{transform:translateX(120%)}
+.hz .btn-p{background:var(--teal)}.hz .btn-p:hover{background:#1ba39d}
+.hz .btn-s{color:#eef0e8;border-color:#ffffff40}.hz .btn-s:hover{background:#ffffff14;border-color:#ffffff80}
+.vz{border:1px solid #ffffff26;border-radius:var(--r);background:#071822;position:relative;animation:up 1.1s .3s both}
+.vz svg{display:block;width:100%;height:auto}
+.vz .ro{position:absolute;left:14px;top:12px;font:400 .72rem/1.7 var(--m);color:#8fa5ad;pointer-events:none}
+.vz .ro b{display:block;color:#eef0e8;font-weight:500;font-size:.85rem}
+.vz .ro .cd{color:var(--amber)}
+.vz .tg{position:absolute;right:12px;top:12px}
+.vz .tg .badge{color:var(--amber);border-color:#e7a93b66}
+.stg{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #ffffff26}
+.stg button{background:none;border:0;border-right:1px solid #ffffff1a;color:#8fa5ad;font:500 .7rem var(--m);padding:12px 6px 10px;cursor:pointer;text-align:left;position:relative;transition:color .3s}
+.stg button:last-child{border:0}.stg button.on{color:#fff}
+.stg button:after{content:"";position:absolute;left:0;top:-1px;height:2px;width:0;background:var(--amber)}
+.stg button.on:after{animation:fill 3.4s linear forwards}.stg.paused button.on:after{width:100%;animation:none}
+@keyframes fill{to{width:100%}}
+.gs .st{opacity:0;transform-origin:240px 240px;transform:scale(1.18);transition:opacity .9s,transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.gs .st.on{opacity:1;transform:none}
+#ret{transform-origin:240px 240px;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.pr{animation:ping 2.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ping{from{transform:scale(.4);opacity:1}to{transform:scale(2.6);opacity:0}}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .8s,transform .8s cubic-bezier(.2,.7,.2,1)}.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.12s}.rv.d2{transition-delay:.24s}
+.tag-strip{background:var(--forest);color:#eef0e8;padding:var(--s3) 0;font:500 .95rem var(--m)}
+.tag-strip .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--s2)}
+.c3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.c3 .card{padding:var(--s4);display:grid;gap:var(--s3);align-content:start;border-top:3px solid var(--teal)}
+.c3 .card:nth-child(2){border-top-color:var(--forest)}.c3 .card:nth-child(3){border-top-color:var(--amber)}
+.c3 h3{font:700 2rem var(--h);letter-spacing:.01em}
+.tlp{padding:var(--s5) var(--s4);display:grid;gap:var(--s4)}
+.tlp .big{font:500 clamp(3rem,7vw,5.5rem)/1 var(--m);color:var(--amber)}
+.axis{position:relative;height:90px}
+.axis:before{content:"";position:absolute;left:0;right:0;top:20px;height:2px;background:#ffffff26}
+.axis .fl{position:absolute;left:0;top:20px;height:2px;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width 3.2s cubic-bezier(.4,0,.2,1)}
+.nd{position:absolute;top:12px;transform:translateX(-50%);text-align:center;font:400 .8rem var(--m);color:#8fa5ad}
+.nd i{display:block;width:16px;height:16px;border-radius:50%;background:var(--data);border:2px solid #ffffff55;margin:0 auto 12px;transition:.4s}
+.nd.on{color:#eef0e8}.nd.on i{border-color:var(--teal);background:var(--teal)}
+.nd.fu.on i{border-color:var(--amber);background:var(--data)}
+.nd:first-child{transform:none;text-align:left}.nd:first-child i{margin-left:0}.nd:last-child{transform:translateX(-100%);text-align:right}.nd:last-child i{margin-right:0;margin-left:auto}
+.nd.y50 i{width:26px;height:26px;margin-top:-5px;border-color:var(--amber);position:relative}
+.nd.y50.on i{background:var(--amber);box-shadow:0 0 0 6px #e7a93b33}
+.nd.y50 b{color:var(--amber);font-weight:500}
+@media(max-width:940px){.hz .wrap{grid-template-columns:1fr;min-height:0}.c3{grid-template-columns:1fr}.nd span{display:none}.nd.y50 span,.nd:first-child span{display:inline}}
+
+/* ---- explorer ---- */
+.exh{padding:var(--s6) 0 var(--s4)}
+.exg{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(280px,1fr);gap:var(--s3);align-items:stretch}
+.exm{position:relative;background:#071822;border:1px solid #ffffff26;border-radius:var(--r);overflow:hidden;min-height:300px;aspect-ratio:2/1;color:#eef0e8}
+.exm svg{position:absolute;inset:0;width:100%;height:100%}
+#wg{transition:transform 1.7s cubic-bezier(.65,0,.2,1)}
+#wg *{vector-effect:non-scaling-stroke}
+#wg>g{transition:opacity 1s}
+.exm .ov{position:absolute;z-index:2;pointer-events:none}
+.exm .tl-l{left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.exm .bc{right:12px;top:12px;display:flex;pointer-events:auto;border:1px solid #ffffff33;border-radius:var(--r);overflow:hidden;background:#071822cc}
+.exm .bc button{background:none;border:0;border-right:1px solid #ffffff1f;color:#8fa5ad;font:500 .68rem var(--m);padding:7px 9px;cursor:pointer}
+.exm .bc button:last-child{border:0}.exm .bc button.on{color:#fff;background:#ffffff1a}
+.exm .yr{left:14px;bottom:10px;font:500 clamp(2.2rem,5vw,3.6rem)/1 var(--m);color:var(--amber)}
+.exm .yr small{display:block;font-size:.68rem;color:#8fa5ad;letter-spacing:.04em;margin-top:6px}
+.exm .lg{right:12px;bottom:12px;font:400 .68rem var(--m);color:#8fa5ad;width:150px}
+.exm .lg i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,#168C87,#E7A93B,#C85C55);margin-bottom:4px}
+.exm .lg span{display:flex;justify-content:space-between}
+.exm .hint{left:50%;bottom:12px;transform:translateX(-50%);font:500 .74rem var(--m);color:#eef0e8;background:#0B1F2Acc;border:1px solid #e7a93b66;padding:6px 12px;border-radius:var(--r);white-space:nowrap;transition:opacity .5s}
+.side{display:grid;gap:var(--s3);align-content:start}
+.side .card{padding:var(--s4)}
+.ind{display:grid;grid-template-columns:1fr auto;gap:2px var(--s3);align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.ind b{font:600 1rem var(--h)}.ind .v{font:500 .95rem var(--m);color:#9a6a08}
+:root[data-theme=dark] .ind .v{color:var(--amber)}
+.ind .lbl{color:var(--mute);font-size:.85rem}.ind svg{grid-row:1/3;grid-column:2}
+.ind.hi .v{color:var(--red)}
+.exc{padding:var(--s4);display:grid;gap:var(--s3)}
+.yctl{display:grid;gap:var(--s3)}
+.yctl .top{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);flex-wrap:wrap}
+button.nd{background:none;border:0;padding:0 10px;cursor:pointer;font-family:var(--m)}
+.axis .fl{transition:width .9s cubic-bezier(.4,0,.2,1)}
+#exs{margin:var(--s3) 0 var(--s2)}
+.src5{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--s3)}
+.src5 .card{padding:var(--s3);display:grid;gap:8px;align-content:start}.src5 .card .mono{font-size:.68rem;color:var(--mute)}
+.ctab{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between;background:var(--navy);color:#eef0e8;border-radius:var(--r);padding:var(--s4)}
+.ctab p{color:#b9c9cd;font-size:1.05rem;max-width:56ch}
+.ctab .btn-p{background:var(--teal);font-size:1.05rem;padding:14px 26px}
+@media(max-width:940px){.exg{grid-template-columns:1fr}.exm .lg{display:none}.exm .bc button{padding:6px 6px;font-size:.6rem}}
+
+/* ---- my farm ---- */
+.trail{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 .72rem var(--m);color:var(--mute);margin-bottom:var(--s3)}
+.trail span+span:before{content:"/";margin-right:10px;opacity:.5}.trail b{color:var(--ink);font-weight:500}
+.fg{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:var(--s3)}
+.fm{background:#071822;border:1px solid #ffffff26;border-radius:var(--r);position:relative;overflow:hidden;color:#eef0e8}
+.fm svg{display:block;width:100%;height:auto}
+.fm .ov{position:absolute;font:400 .68rem var(--m);color:#8fa5ad}
+.fm .a{left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}.fm .b{left:12px;bottom:10px}.fm .c{right:12px;bottom:10px;text-align:right}
+.draw{stroke-dasharray:900;stroke-dashoffset:900;animation:dr 2.2s .3s ease forwards}@keyframes dr{to{stroke-dashoffset:0}}
+.mtr{position:relative;height:6px;border-radius:3px;background:var(--line);margin:8px 0 4px}
+.mtr i{position:absolute;top:-4px;width:3px;height:14px;background:var(--amber);border-radius:2px;transition:left 1s}
+.mtr.z{background:linear-gradient(90deg,#168C87,#168C8780 30%,#E7A93B99 55%,#C85C5599)}
+.sp{display:grid;grid-template-columns:1fr auto;gap:0 var(--s3);align-items:baseline;padding:12px 0;border-top:1px solid var(--line)}
+.sp:first-of-type{border-top:0}.sp .k{color:var(--mute);font-size:.88rem}.sp .v{font:500 1.3rem var(--m)}.sp .v small{font-size:.75rem;color:var(--mute)}
+.sp .m{grid-column:1/3}
+.dv{font:500 .72rem var(--m);border:1px dashed #e7a93b99;color:#8a5f0a;padding:3px 8px;border-radius:4px;background:#e7a93b14}
+:root[data-theme=dark] .dv{color:var(--amber)}
+.stt{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.stt .card{padding:var(--s3);display:grid;gap:10px}
+.lv{display:flex;gap:4px}.lv i{flex:1;height:6px;border-radius:2px;background:var(--line)}
+.lv.a i.on{background:var(--amber)}.lv.t i.on{background:var(--teal)}
+.stt b{font:600 1.15rem var(--h)}
+.upl{display:grid;grid-template-columns:1fr 1.1fr;gap:var(--s5);align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:var(--r);padding:var(--s5)}
+.dz{border:1.5px dashed #168c8788;border-radius:var(--r);padding:var(--s4);text-align:center;display:grid;gap:var(--s2);justify-items:center;background:#168c870d}
+.dz svg{width:44px;height:44px}
+.upp{display:none;margin-top:var(--s3);text-align:left;width:100%;font:400 .82rem var(--m);border-top:1px solid var(--line);padding-top:var(--s3)}
+.upp.open{display:block;animation:in .4s}.upp div{display:flex;justify-content:space-between;padding:3px 0}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+.cg .metric .val{color:var(--ink)}.dark-panel.metric .val{color:#eef0e8}
+@media(max-width:940px){.fg,.upl,.cg,.stt{grid-template-columns:1fr}.upl{padding:var(--s4)}}
+
+/* ---- farm time machine ---- */
+.tmx{padding:var(--s4);display:grid;gap:var(--s4)}
+.tmtop{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.phs{display:flex;border:1px solid #ffffff26;border-radius:var(--r);overflow:hidden}
+.phs span{padding:9px 16px;font:500 .72rem var(--m);color:#8fa5ad;border-right:1px solid #ffffff1a;transition:background .5s,color .5s}
+.phs span:last-child{border:0}.phs span.on{color:#0B1F2A;background:var(--amber)}
+.tmg{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:var(--s4)}
+.viz{position:relative;border:1px solid #ffffff1f;border-radius:var(--r);overflow:hidden;background:#071822}
+.viz svg{display:block;width:100%;height:auto}
+.viz .yv{position:absolute;right:14px;top:10px;text-align:right;pointer-events:none}
+.yv b{font:500 clamp(2.4rem,5vw,4rem)/1 var(--m);color:var(--amber);display:block}
+.yv small{font:500 .68rem var(--m);color:#8fa5ad;letter-spacing:.04em}
+.viz .gr{position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,#E7A93B);opacity:0;pointer-events:none}
+.gau{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #ffffff1f}
+.gau div{padding:12px 14px;border-right:1px solid #ffffff14}.gau div:last-child{border:0}
+.gau small{font:400 .66rem var(--m);color:#8fa5ad;display:block}
+.gau b{font:600 .9rem var(--h);display:block;margin:2px 0 8px;color:#eef0e8}
+.gau .bar{height:4px;background:#ffffff26;border-radius:2px;overflow:hidden}.gau .bar i{display:block;height:100%;width:0;background:var(--teal)}.gau .bar i.am{background:var(--amber)}
+.sum{align-content:start;display:grid}
+.sr{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;border-top:1px solid #ffffff1f;gap:12px}
+.sr .k{color:#8fa5ad;font-size:.9rem}.sr b{font:500 1.7rem var(--m);color:#eef0e8;text-align:right}
+.rd{animation:fall 1.7s linear infinite}
+@keyframes fall{0%{transform:translateY(-24px);opacity:0}15%{opacity:.75}100%{transform:translateY(132px);opacity:0}}
+.wv{animation:shim 7s ease-in-out infinite alternate}@keyframes shim{to{transform:translateX(-18px)}}
+.cry{transition:opacity .6s}
+#tax .fl{transition:none}#tax{height:78px}
+.nd.sel i{border-color:var(--amber);box-shadow:0 0 0 5px #e7a93b40}
+.tmx .nd{font-size:.95rem}
+.cts{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3)}
+.ct{padding:var(--s3) var(--s4) var(--s4);display:grid;gap:var(--s3);align-content:start}
+.ct .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ct .top span{font-weight:500}
+.ct .top b{font:500 1.35rem var(--m)}
+.ends{display:flex;justify-content:space-between;font:400 .68rem var(--m);color:var(--mute)}
+input.rng{height:6px;border-radius:3px}
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--line);border-radius:8px;padding:2px}
+.seg button{position:relative;z-index:1;background:none;border:0;padding:11px 4px;font:500 .74rem var(--m);color:var(--mute);cursor:pointer;transition:color .3s}
+.seg button.on{color:#fff}
+.sgi{position:absolute;top:2px;bottom:2px;left:2px;width:calc((100% - 4px)/var(--n));background:var(--forest);border-radius:6px;transform:translateX(calc(var(--i)*100%));transition:transform .4s cubic-bezier(.2,.7,.2,1)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+.two>.card,.two>.dark-panel{padding:var(--s4)}
+.imp{padding:14px 0;border-top:1px solid var(--line);animation:in .5s}.imp:first-of-type{border-top:0}
+.imp b{font:600 1.05rem var(--h);display:block}.imp span{color:var(--mute)}
+.cb{display:grid;grid-template-columns:92px 1fr 40px;gap:12px;align-items:center;padding:9px 0;font-size:.92rem}
+.cb .tk{height:10px;background:#ffffff1f;border-radius:5px;overflow:hidden}.cb .tk i{display:block;height:100%;width:0;background:var(--teal)}.cb .tk i.am{background:var(--amber)}.cb .tk i.sd{background:var(--sand)}
+.cb b{font:500 .95rem var(--m);text-align:right}
+@media(max-width:1100px){.cts{grid-template-columns:1fr 1fr}}
+@media(max-width:940px){.tmg,.two,.cts{grid-template-columns:1fr}.gau{grid-template-columns:1fr 1fr}.phs span{padding:8px 8px;font-size:.6rem}.tmx{padding:var(--s3)}}
+
+/* ---- results ---- */
+.scs{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between;padding:var(--s3) var(--s4)}
+.scs .ch{display:flex;flex-wrap:wrap;gap:var(--s4)}.scs .ch div small{display:block;font:400 .66rem var(--m);color:#8fa5ad}.scs .ch div b{font:500 1.15rem var(--m);color:#eef0e8}
+.rcg{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3);align-items:stretch}
+.rc{padding:var(--s4);display:grid;gap:var(--s4);align-content:space-between}
+.chain{display:grid;justify-items:stretch}
+.sb{display:flex;gap:var(--s3);align-items:center;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:var(--r);padding:12px 14px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 10%,transparent),transparent 60%)}
+.sb .gl{flex:none;width:90px}.sb b{display:block;font:600 1.15rem var(--h);line-height:1.2}.sb small{color:var(--mute);font-size:.68rem}.sb .tp{display:block;font-size:.68rem;color:var(--mute)}
+.cn{display:flex;justify-content:center;padding:4px 0}
+.inds{display:grid;gap:0}
+.ii{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+.ii .k{display:block;color:var(--mute);font-size:.8rem}.ii b{display:block;font:600 .98rem var(--h)}.ii small{color:var(--mute);font-size:.7rem}
+.dt{flex:none;width:12px;height:12px;border-radius:50%;margin-top:6px;transform:scale(0);animation:pop .5s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes pop{to{transform:scale(1)}}
+.d0{background:var(--teal)}.d1{background:var(--sand);box-shadow:0 0 0 1px #0b1f2a40}.d2{background:var(--red)}.d3{background:none;border:2px solid var(--amber)}
+.mx{padding:var(--s4);overflow-x:auto}
+.mxg{display:grid;grid-template-columns:150px repeat(3,minmax(140px,1fr));min-width:560px}
+.mxg>div{padding:12px 8px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;font-size:.88rem}
+.mxg>div.h{border-top:0;font:500 .72rem var(--m);color:var(--mute)}
+.mxg .dt{margin:0;transform:scale(1);animation:none}
+.flow{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.flow .in{display:grid;gap:6px}.flow .in span,.flow .nx{border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font:500 .82rem var(--m);background:var(--card)}
+.flow .nx{background:var(--navy);color:#eef0e8;border-color:var(--navy)}.flow .nx.am{background:var(--amber);color:var(--navy);border-color:var(--amber)}
+.flow .ar{font:500 1.2rem var(--m);color:var(--teal)}
+.finb{background:var(--navy);color:#eef0e8;text-align:center;padding:var(--s6) var(--s4);display:grid;gap:var(--s3);justify-items:center}
+.finb h2{font-size:clamp(2rem,5vw,3.8rem);max-width:18ch}.finb .mono{color:var(--amber);font-size:.85rem}
+.drawer{width:min(470px,100%);transition:transform .55s cubic-bezier(.2,.8,.2,1);box-shadow:-20px 0 60px #0b1f2a33;gap:var(--s4)}
+.drawer .ds{display:grid;gap:8px;align-content:start;padding-top:var(--s3);border-top:1px solid var(--line)}
+.drawer .ds:first-of-type{border-top:0;padding-top:0}
+.drawer.open .ds{animation:dsi .6s cubic-bezier(.2,.8,.2,1) both}
+.drawer.open .ds:nth-of-type(2){animation-delay:.08s}.drawer.open .ds:nth-of-type(3){animation-delay:.14s}.drawer.open .ds:nth-of-type(4){animation-delay:.2s}.drawer.open .ds:nth-of-type(5){animation-delay:.26s}.drawer.open .ds:nth-of-type(6){animation-delay:.32s}.drawer.open .ds:nth-of-type(7){animation-delay:.38s}
+@keyframes dsi{from{opacity:0;transform:translateX(18px)}}
+.drawer h3{font:600 .8rem var(--m);letter-spacing:.04em;color:var(--teal);text-transform:none}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:.92rem}.kv b,.kv i{font:500 .92rem var(--m);font-style:normal;text-align:right}
+.cc{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:grid;gap:4px}.cc>b{font:600 .95rem var(--h)}
+.tx{font-size:.9rem;color:var(--mute)}.tx b{color:var(--ink);font:600 .85rem var(--h);display:block}
+.sr2{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.sr2:first-of-type{border-top:0}.sr2 p{grid-column:1;font-size:.8rem;color:var(--mute)}.sr2 .vs{grid-column:2;grid-row:1/3;padding:6px 12px;font-size:.78rem}
+.drawer .tr{background:#168c8710;border:1px solid #168c8740;border-radius:var(--r);padding:var(--s3);font-size:.88rem}
+@media(max-width:1100px){.rcg{grid-template-columns:1fr}.rc{grid-template-columns:1fr 1fr;align-items:start}.rc>.btn,.rc>.row{grid-column:1/3}}
+@media(max-width:700px){.rc{grid-template-columns:1fr}.rc>.btn,.rc>.row{grid-column:1}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav" id="nav"></div></header>
+<main id="app"></main>
+<footer><div class="wrap" id="foot"></div></footer>
+<div class="scrim" id="scrim" data-act="close"></div>
+<aside class="drawer" id="drawer" aria-label="Evidence"></aside>
+
+<script>
+/* ---------- i18n: labels translate, numbers & units never do ---------- */
+const T={en:{explore:'Explore',farm:'My Farm',tm:'Farm Time Machine',about:'About',demo:'DEMO MODE',
+tag:'Explore your farm’s future before you plant it.',
+lead:'AgriShift combines NASA environmental context, local soil information and crop science to help farmers explore possible future conditions and compare multi-season crop rotations.',
+phil:'We don’t tell farmers what the future will be. We let them explore possible futures—and see what they could do about them.',
+start:'Start exploring',how:'How it works',soil:'Soil Moisture',year:'Scenario year',rain:'Rainfall',salinity:'Soil salinity',
+demoData:'DEMO DATA',sim:'SIMULATED SCENARIO',proj:'PROJECTED SCENARIO',ref:'REFERENCE DATA',
+live:'LIVE SENSOR DATA',demoS:'DEMO SENSOR DATA',road:'FUTURE ROADMAP',
+sys:'Design system',comp:'Components',ev:'Open evidence',evT:'Evidence',close:'Close',choose:'Choose rotation',
+next:'Built in the next stage.',
+s_explore:'Global Salinity Explorer',s_farm:'My Farm',s_tm:'Farm Time Machine',s_res:'Rotation Results + Evidence',
+d_explore:'From global change to Bangladesh’s coast: where salinity is shifting.',d_farm:'Local soil baseline and NASA environmental context for one field.',d_tm:'Move from 2025 to 2050 and watch conditions change across possible futures.',d_res:'Three to five rotation options, why each fits, and the sources behind them.',
+src1:'Local soil information and baseline.',src2:'Soil moisture context from Earth observation.',src3:'Satellite precipitation estimates.',src4:'Weather and solar data for agriculture.',src5:'Vegetation and land-surface context.',
+srcNote:'NASA data gives environmental context. It does not measure the soil nitrogen, phosphorus or potassium in your field. SRDI supplies the local soil baseline; future on-site sensors could supply current readings.',
+foot:'AgriShift is a concept prototype by team Daydreammer for NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data. All values shown are demo, simulated or projected. They are not live measurements and not predictions.',
+map:'Map container — WORLD → BANGLADESH → KHULNA → MY FARM',rot:'Rotation option',seq:'Season sequence',fit:'Why this option?'},
+bn:{explore:'অন্বেষণ',farm:'আমার খামার',tm:'ফার্ম টাইম মেশিন',about:'সম্পর্কে',demo:'ডেমো মোড',
+tag:'রোপণের আগেই দেখে নিন আপনার খামারের ভবিষ্যৎ।',
+lead:'অ্যাগ্রিশিফট নাসার পরিবেশগত তথ্য, স্থানীয় মাটির তথ্য ও ফসল বিজ্ঞানকে একত্র করে কৃষককে সম্ভাব্য ভবিষ্যৎ পরিস্থিতি দেখতে এবং বহু-মৌসুমি ফসল পর্যায়ক্রম তুলনা করতে সাহায্য করে।',
+phil:'আমরা কৃষককে বলি না ভবিষ্যৎ কী হবে। আমরা সম্ভাব্য ভবিষ্যৎ দেখার সুযোগ দিই—এবং সে ক্ষেত্রে কী করা যায় তা দেখাই।',
+start:'অন্বেষণ শুরু করুন',how:'কীভাবে কাজ করে',soil:'মাটির আর্দ্রতা',year:'পরিস্থিতির বছর',rain:'বৃষ্টিপাত',salinity:'মাটির লবণাক্ততা',
+demoData:'ডেমো ডেটা',sim:'সিমুলেটেড পরিস্থিতি',proj:'প্রক্ষেপিত পরিস্থিতি',ref:'রেফারেন্স ডেটা',
+live:'লাইভ সেন্সর ডেটা',demoS:'ডেমো সেন্সর ডেটা',road:'ভবিষ্যৎ পরিকল্পনা',
+sys:'ডিজাইন সিস্টেম',comp:'কম্পোনেন্ট',ev:'প্রমাণ দেখুন',evT:'প্রমাণ',close:'বন্ধ করুন',choose:'পর্যায়ক্রম বেছে নিন',
+next:'পরবর্তী ধাপে তৈরি হবে।',
+s_explore:'বৈশ্বিক লবণাক্ততা এক্সপ্লোরার',s_farm:'আমার খামার',s_tm:'ফার্ম টাইম মেশিন',s_res:'পর্যায়ক্রমের ফল ও প্রমাণ',
+d_explore:'বৈশ্বিক পরিবর্তন থেকে বাংলাদেশের উপকূল: লবণাক্ততা কোথায় বদলাচ্ছে।',d_farm:'একটি জমির স্থানীয় মাটির ভিত্তি ও নাসার পরিবেশগত তথ্য।',d_tm:'২০২৫ থেকে ২০৫০ পর্যন্ত এগিয়ে সম্ভাব্য ভবিষ্যতে অবস্থার পরিবর্তন দেখুন।',d_res:'তিন থেকে পাঁচটি পর্যায়ক্রম, প্রতিটি কেন উপযোগী এবং তার উৎস।',
+src1:'স্থানীয় মাটির তথ্য ও ভিত্তি।',src2:'ভূ-পর্যবেক্ষণ থেকে মাটির আর্দ্রতার তথ্য।',src3:'উপগ্রহভিত্তিক বৃষ্টিপাতের অনুমান।',src4:'কৃষির জন্য আবহাওয়া ও সৌর তথ্য।',src5:'উদ্ভিদ ও ভূপৃষ্ঠের তথ্য।',
+srcNote:'নাসার তথ্য পরিবেশগত প্রেক্ষাপট দেয়; এটি আপনার জমির নাইট্রোজেন, ফসফরাস বা পটাশিয়াম মাপে না। SRDI স্থানীয় মাটির ভিত্তি দেয়; ভবিষ্যতে সাইটের সেন্সর বর্তমান মান দিতে পারে।',
+foot:'অ্যাগ্রিশিফট নাসা স্পেস অ্যাপস চ্যালেঞ্জ ২০২৬-এর জন্য দল Daydreammer-এর একটি ধারণা-প্রোটোটাইপ। দেখানো সব মান ডেমো, সিমুলেটেড বা প্রক্ষেপিত—লাইভ পরিমাপ বা পূর্বাভাস নয়।',
+map:'ম্যাপ কন্টেইনার — বিশ্ব → বাংলাদেশ → খুলনা → আমার খামার',rot:'পর্যায়ক্রম বিকল্প',seq:'মৌসুমের ক্রম',fit:'কেন এই বিকল্প?'}};
+Object.assign(T.en,{k1:'NASA SPACE APPS 2026 · TEAM DAYDREAMMER',h1a:'Explore Your Farm’s Future',h1b:'Before You Plant It.',sup:'NASA Earth observations + local soil information + crop science',ctaP:'Enter Farm Time Machine',ctaS:'Explore Global Change',
+st0:'WORLD',st1:'BANGLADESH',st2:'COASTAL BANGLADESH',st3:'KHULNA',st4:'MY FARM',view:'STYLIZED VIEW · NOT SURVEY DATA',
+see:'SEE',seeD:'Understand environmental change.',meas:'MEASURE',measD:'Combine local soil information with environmental data.',expl:'EXPLORE',explD:'Compare possible future crop rotations.',
+tlH:'From today to 2050',tlN:'2025 is a reference baseline. Years after it are a projected scenario you can explore, not live data and not a forecast.',base:'BASELINE · REFERENCE',hz:'Farm Time Machine horizon',fin:'Ready to look ahead?'});
+Object.assign(T.bn,{k1:'নাসা স্পেস অ্যাপস ২০২৬ · দল DAYDREAMMER',h1a:'আপনার খামারের ভবিষ্যৎ দেখুন',h1b:'রোপণের আগেই।',sup:'নাসার পৃথিবী পর্যবেক্ষণ + স্থানীয় মাটির তথ্য + ফসল বিজ্ঞান',ctaP:'ফার্ম টাইম মেশিনে প্রবেশ করুন',ctaS:'বৈশ্বিক পরিবর্তন দেখুন',
+st0:'বিশ্ব',st1:'বাংলাদেশ',st2:'উপকূলীয় বাংলাদেশ',st3:'খুলনা',st4:'আমার খামার',view:'স্টাইলাইজড ভিউ · জরিপ ডেটা নয়',
+see:'দেখুন',seeD:'পরিবেশগত পরিবর্তন বুঝুন।',meas:'পরিমাপ',measD:'স্থানীয় মাটির তথ্যের সঙ্গে পরিবেশগত তথ্য মেলান।',expl:'অন্বেষণ',explD:'সম্ভাব্য ভবিষ্যৎ ফসল পর্যায়ক্রম তুলনা করুন।',
+tlH:'আজ থেকে ২০৫০ পর্যন্ত',tlN:'২০২৫ একটি রেফারেন্স ভিত্তি। এর পরের বছরগুলো অন্বেষণযোগ্য প্রক্ষেপিত পরিস্থিতি—লাইভ ডেটা বা পূর্বাভাস নয়।',base:'ভিত্তি · রেফারেন্স',hz:'ফার্ম টাইম মেশিনের দিগন্ত',fin:'সামনে তাকাতে প্রস্তুত?'});
+Object.assign(T.en,{exH:'Watch the Environment Change',exS:'Explore historical conditions and future scenarios across changing environments.',gl:'GLOBAL',sa:'SOUTH ASIA',hint:'Select Bangladesh to zoom in',salS:'Salinity stress',fresh:'Freshwater',vInc:'Increasing',vVar:'Variable',vPres:'Increasing pressure',idx:'Demo index 0–100 · illustrative, not measured',
+ctx:'AgriShift uses environmental and Earth-observation context to help users explore how changing conditions could affect agricultural decisions.',play:'Play 2025 to 2050',pause:'Pause',srcH:'Where the context comes from',typeL:'LOCAL SOIL BASELINE',typeE:'EARTH-OBSERVATION CONTEXT',cta2:'Explore My Farm →',lo:'Lower stress',hi:'Higher stress',zone:'Stylized salinity-affected zone',selP:'Select Bangladesh on the map to see its conditions.',yrL:'Scenario year',dN:'Demo values for a projected scenario. Not live NASA data.',exBase:'Baseline year'});
+Object.assign(T.bn,{exH:'পরিবেশের পরিবর্তন দেখুন',exS:'পরিবর্তনশীল পরিবেশে অতীতের অবস্থা ও ভবিষ্যৎ পরিস্থিতি অন্বেষণ করুন।',gl:'বৈশ্বিক',sa:'দক্ষিণ এশিয়া',hint:'জুম করতে বাংলাদেশ বেছে নিন',salS:'লবণাক্ততার চাপ',fresh:'মিঠা পানি',vInc:'বাড়ছে',vVar:'পরিবর্তনশীল',vPres:'বাড়ন্ত চাপ',idx:'ডেমো সূচক ০–১০০ · উদাহরণমূলক, পরিমাপ নয়',
+ctx:'অ্যাগ্রিশিফট পরিবেশগত ও ভূ-পর্যবেক্ষণ তথ্য ব্যবহার করে দেখায় পরিবর্তনশীল অবস্থা কৃষি সিদ্ধান্তকে কীভাবে প্রভাবিত করতে পারে।',play:'২০২৫ থেকে ২০৫০ চালান',pause:'থামান',srcH:'তথ্যের প্রেক্ষাপট যেখান থেকে আসে',typeL:'স্থানীয় মাটির ভিত্তি',typeE:'ভূ-পর্যবেক্ষণ প্রেক্ষাপট',cta2:'আমার খামার দেখুন →',lo:'কম চাপ',hi:'বেশি চাপ',zone:'স্টাইলাইজড লবণাক্ত অঞ্চল',selP:'অবস্থা দেখতে ম্যাপে বাংলাদেশ বেছে নিন।',yrL:'পরিস্থিতির বছর',dN:'প্রক্ষেপিত পরিস্থিতির ডেমো মান। লাইভ নাসা ডেটা নয়।',exBase:'ভিত্তি বছর'});
+Object.assign(T.en,{loc:'Khulna, Bangladesh',dfarm:'DEMO FARM',dsd:'DEMO SOIL DATA',profH:'Soil profile',ec:'Soil Salinity / EC',ph:'pH',nit:'Nitrogen',phos:'Phosphorus',pot:'Potassium',tex:'Texture',clay:'Clay Loam',dv:'DEMO VALUE',
+upH:'Upload Soil Test Card',upD:'Upload a soil test report to extract soil values and populate your farm profile.',concept:'CONCEPT · UI ONLY',upNote:'Nothing is uploaded or read in this prototype. This shows where extracted values would appear.',
+condH:'Current conditions',temp:'Temperature',fRoad:'Live on-site sensors are a future roadmap item.',fsH:'Farm status',salSt:'Salinity Stress',mh:'Moderate / High',wa:'Water Availability',nor:'Normal',sh:'Soil Health',na:'Needs Attention',aN:'Simulated assessment from demo values. Neutral indicators, not a diagnosis.',
+mapN:'STYLIZED PLOT VIEW · NOT TO SCALE',ctaF:'Enter Farm Time Machine →',srcE:'Different sources provide local soil information and environmental context.',plot:'Selected plot',fields:'Fields it would fill',lo2:'Low',hi2:'High'});
+Object.assign(T.bn,{loc:'খুলনা, বাংলাদেশ',dfarm:'ডেমো খামার',dsd:'ডেমো মাটির ডেটা',profH:'মাটির প্রোফাইল',ec:'মাটির লবণাক্ততা / EC',ph:'pH',nit:'নাইট্রোজেন',phos:'ফসফরাস',pot:'পটাশিয়াম',tex:'গঠন',clay:'এঁটেল দোআঁশ',dv:'ডেমো মান',
+upH:'মাটি পরীক্ষার কার্ড আপলোড করুন',upD:'মাটি পরীক্ষার রিপোর্ট আপলোড করে মানগুলো বের করুন ও আপনার খামারের প্রোফাইল পূরণ করুন।',concept:'ধারণা · শুধু UI',upNote:'এই প্রোটোটাইপে কিছু আপলোড বা পড়া হয় না। এখানে দেখানো হচ্ছে বের করা মান কোথায় বসবে।',
+condH:'বর্তমান অবস্থা',temp:'তাপমাত্রা',fRoad:'সাইটে লাইভ সেন্সর ভবিষ্যৎ পরিকল্পনার অংশ।',fsH:'খামারের অবস্থা',salSt:'লবণাক্ততার চাপ',mh:'মাঝারি / বেশি',wa:'পানির প্রাপ্যতা',nor:'স্বাভাবিক',sh:'মাটির স্বাস্থ্য',na:'মনোযোগ প্রয়োজন',aN:'ডেমো মান থেকে সিমুলেটেড মূল্যায়ন। নিরপেক্ষ সূচক, রোগনির্ণয় নয়।',
+mapN:'স্টাইলাইজড প্লট ভিউ · স্কেল অনুযায়ী নয়',ctaF:'ফার্ম টাইম মেশিনে প্রবেশ করুন →',srcE:'বিভিন্ন উৎস স্থানীয় মাটির তথ্য ও পরিবেশগত প্রেক্ষাপট দেয়।',plot:'নির্বাচিত প্লট',fields:'যে ঘরগুলো পূরণ হবে',lo2:'কম',hi2:'বেশি'});
+Object.assign(T.en,{tmH:'Enter the Farm Time Machine',tmS:'What could your farm look like under different future conditions?',uni:'Instead of simply recommending a crop, AgriShift lets you explore how different future conditions could change the possible choices.',ph0:'CURRENT FARM',ph1:'CHANGING CONDITIONS',scen:'SCENARIO',ps:'PROJECTED / SIMULATED',cur:'CURRENT FARM · DEMO DATA',
+sRain:'Projected rainfall',sPri:'Soil-health priority',ec2:'Total soil EC',current:'CURRENT',wNor:'NORMAL',wLim:'LIMITED',pLo:'LOW',pMd:'MEDIUM',pHi:'HIGH',
+ctlH:'Scenario controls',ctlN:'Set the conditions for 2050. Earlier years move part of the way toward them.',rainC:'Rainfall Shift',salC:'Salinity Stress',watC:'Water Availability',soilC:'Soil Health Priority',
+meanH:'What could this mean for your farm?',meanN:'A scenario explorer, not a forecast. Explore possible futures.',cropH:'How the possible choices shift',cropN:'Demo suitability index 0–100 · illustrative placeholders, not a recommendation.',
+gSoil:'Soil condition',gCrop:'Crop suitability',high:'High',gNor:'Normal',gSome:'Somewhat limited',gLim:'Limited',modR:'Moderate',redu:'Reduced',replay:'Replay the journey',lFr:'FRESHWATER',lSa:'SALINE WATER',lSf:'SURFACE',
+tmC:'Explore possible futures, then see what you could do about them.',ctaR:'Explore Possible Rotations →',tlA:'Select a year'});
+Object.assign(T.bn,{tmH:'ফার্ম টাইম মেশিনে প্রবেশ করুন',tmS:'ভবিষ্যতের ভিন্ন অবস্থায় আপনার খামার কেমন হতে পারে?',uni:'শুধু একটি ফসলের সুপারিশ না করে, অ্যাগ্রিশিফট দেখায় ভিন্ন ভবিষ্যৎ অবস্থা কীভাবে সম্ভাব্য পছন্দ বদলে দিতে পারে।',ph0:'বর্তমান খামার',ph1:'পরিবর্তনশীল অবস্থা',scen:'পরিস্থিতি',ps:'প্রক্ষেপিত / সিমুলেটেড',cur:'বর্তমান খামার · ডেমো ডেটা',
+sRain:'প্রক্ষেপিত বৃষ্টিপাত',sPri:'মাটির স্বাস্থ্য অগ্রাধিকার',ec2:'মোট মাটির EC',current:'বর্তমান',wNor:'স্বাভাবিক',wLim:'সীমিত',pLo:'কম',pMd:'মাঝারি',pHi:'বেশি',
+ctlH:'পরিস্থিতি নিয়ন্ত্রণ',ctlN:'২০৫০ সালের অবস্থা ঠিক করুন। আগের বছরগুলো সেদিকে আংশিক এগোয়।',rainC:'বৃষ্টিপাতের পরিবর্তন',salC:'লবণাক্ততার চাপ',watC:'পানির প্রাপ্যতা',soilC:'মাটির স্বাস্থ্য অগ্রাধিকার',
+meanH:'এটি আপনার খামারের জন্য কী অর্থ হতে পারে?',meanN:'এটি পরিস্থিতি অন্বেষণের টুল, পূর্বাভাস নয়। সম্ভাব্য ভবিষ্যৎ অন্বেষণ করুন।',cropH:'সম্ভাব্য পছন্দ কীভাবে বদলায়',cropN:'ডেমো উপযোগিতা সূচক ০–১০০ · উদাহরণমূলক, সুপারিশ নয়।',
+gSoil:'মাটির অবস্থা',gCrop:'ফসলের উপযোগিতা',high:'বেশি',gNor:'স্বাভাবিক',gSome:'কিছুটা সীমিত',gLim:'সীমিত',modR:'মাঝারি',redu:'হ্রাসপ্রাপ্ত',replay:'যাত্রাটি আবার দেখুন',lFr:'মিঠা পানি',lSa:'লবণাক্ত পানি',lSf:'ভূপৃষ্ঠ',
+tmC:'সম্ভাব্য ভবিষ্যৎ অন্বেষণ করুন, তারপর দেখুন কী করা যেতে পারে।',ctaR:'সম্ভাব্য পর্যায়ক্রম দেখুন →',tlA:'একটি বছর বেছে নিন'});
+Object.assign(T.en,{rsH:'Possible Futures for Your Farm',rsS:'Explore several feasible multi-season crop rotation pathways under this scenario.',undS:'Under this scenario',rsN:'Pathways to compare, not a ranking. Change the scenario and the pathways change with it.',adj:'Adjust the scenario',opt:'Option',season:'Season',whyBtn:'Why this option?',whyT:'Why This Option?',
+indS:'Salinity',indW:'Water',indSo:'Soil Health',indN:'Nutrients',stS:'Suitable',stC:'Conditionally Suitable',stH:'Higher Stress',stM:'Requires Monitoring',cmpH:'Compare the pathways',soilCond:'SOIL CONDITIONS',envScen:'ENVIRONMENTAL SCENARIO',cropCh:'CROP CHARACTERISTICS',rotC:'ROTATION CONSIDERATIONS',srcD:'DATA SOURCES',viewSrc:'View Source',
+transp:'Calculations are based on documented assumptions, crop characteristics and scenario inputs.',noCert:'These are possible pathways, not a guarantee. NASA data provides environmental context; it does not recommend a crop or measure your soil N, P or K.',
+salTol:'Salinity tolerance',wReq:'Water requirement',nReq:'Nutrient requirement',legC:'Legume contribution',soilC2:'Soil-health consideration',seqC:'Multi-season sequence',ctaA:'Explore Another Future',ctaB:'Return to My Farm',
+recap:'AgriShift combines NASA environmental context, local soil information and crop science, then lets farmers explore possible future conditions and compare multi-season crop rotations.',fl1:'NASA environmental context',fl2:'Local soil information',fl3:'Crop science',fl4:'Explore possible future conditions',fl5:'Compare multi-season rotations',fl6:'Farmer chooses',
+g_cereal:'Cereal',g_oil:'Oilseed',g_leg:'Legume',g_tol:'Salt-tolerant',lv_lo:'Low',lv_lm:'Low–Moderate',lv_mo:'Moderate',lv_hi:'Higher',legS:'legume in sequence',legP:'legumes in sequence',
+legM:'Mung bean in the final season can return some nitrogen to the soil.',legL:'A legume in the second season can add nitrogen before the rice season.',
+sq0:'A cereal, an oilseed, then a legume gives three different crop families across the sequence.',sq1:'Sunflower replaces mustard in the middle season, keeping the legume finish.',sq2:'It starts with a crop that tolerates higher salinity, before the more sensitive rice season.',
+scH:'With high soil-health priority, sequences that include a legume carry more weight.',scM:'Soil health and yield are weighed together.',scL:'Short-term suitability is weighted more than soil health.',chN:'Demo characteristics. Illustrative, to be replaced by documented crop data.',team:'Team Daydreammer · NASA Space Apps Challenge 2026'});
+Object.assign(T.bn,{rsH:'আপনার খামারের সম্ভাব্য ভবিষ্যৎ',rsS:'এই পরিস্থিতিতে একাধিক সম্ভাব্য বহু-মৌসুমি ফসল পর্যায়ক্রম অন্বেষণ করুন।',undS:'এই পরিস্থিতিতে',rsN:'তুলনার জন্য পথ, কোনো ক্রমতালিকা নয়। পরিস্থিতি বদলালে পথও বদলায়।',adj:'পরিস্থিতি বদলান',opt:'বিকল্প',season:'মৌসুম',whyBtn:'কেন এই বিকল্প?',whyT:'কেন এই বিকল্প?',
+indS:'লবণাক্ততা',indW:'পানি',indSo:'মাটির স্বাস্থ্য',indN:'পুষ্টি',stS:'উপযোগী',stC:'শর্তসাপেক্ষে উপযোগী',stH:'বেশি চাপ',stM:'পর্যবেক্ষণ প্রয়োজন',cmpH:'পথগুলো তুলনা করুন',soilCond:'মাটির অবস্থা',envScen:'পরিবেশগত পরিস্থিতি',cropCh:'ফসলের বৈশিষ্ট্য',rotC:'পর্যায়ক্রম বিবেচনা',srcD:'তথ্যের উৎস',viewSrc:'উৎস দেখুন',
+transp:'হিসাব নথিভুক্ত অনুমান, ফসলের বৈশিষ্ট্য ও পরিস্থিতির ইনপুটের ওপর ভিত্তি করে।',noCert:'এগুলো সম্ভাব্য পথ, নিশ্চয়তা নয়। নাসার তথ্য পরিবেশগত প্রেক্ষাপট দেয়; এটি ফসলের সুপারিশ করে না বা আপনার মাটির N, P, K মাপে না।',
+salTol:'লবণসহনশীলতা',wReq:'পানির চাহিদা',nReq:'পুষ্টির চাহিদা',legC:'ডালজাতীয় ফসলের অবদান',soilC2:'মাটির স্বাস্থ্য বিবেচনা',seqC:'বহু-মৌসুমি ক্রম',ctaA:'আরেকটি ভবিষ্যৎ দেখুন',ctaB:'আমার খামারে ফিরুন',
+recap:'অ্যাগ্রিশিফট নাসার পরিবেশগত তথ্য, স্থানীয় মাটির তথ্য ও ফসল বিজ্ঞানকে একত্র করে, তারপর কৃষককে সম্ভাব্য ভবিষ্যৎ অবস্থা অন্বেষণ ও বহু-মৌসুমি ফসল পর্যায়ক্রম তুলনার সুযোগ দেয়।',fl1:'নাসার পরিবেশগত তথ্য',fl2:'স্থানীয় মাটির তথ্য',fl3:'ফসল বিজ্ঞান',fl4:'সম্ভাব্য ভবিষ্যৎ অবস্থা অন্বেষণ',fl5:'বহু-মৌসুমি পর্যায়ক্রম তুলনা',fl6:'কৃষক সিদ্ধান্ত নেন',
+g_cereal:'দানাশস্য',g_oil:'তেলবীজ',g_leg:'ডালজাতীয়',g_tol:'লবণসহনশীল',lv_lo:'কম',lv_lm:'কম–মাঝারি',lv_mo:'মাঝারি',lv_hi:'বেশি',legS:'টি ডালজাতীয় ফসল',legP:'টি ডালজাতীয় ফসল',
+legM:'শেষ মৌসুমে মুগডাল মাটিতে কিছু নাইট্রোজেন ফিরিয়ে দিতে পারে।',legL:'দ্বিতীয় মৌসুমের ডালজাতীয় ফসল ধানের আগে নাইট্রোজেন যোগ করতে পারে।',
+sq0:'দানাশস্য, তেলবীজ, তারপর ডালজাতীয়—ক্রমে তিনটি ভিন্ন ফসল-পরিবার।',sq1:'মাঝের মৌসুমে সরিষার জায়গায় সূর্যমুখী, শেষে ডালজাতীয় ফসল থাকে।',sq2:'শুরুতে বেশি লবণ সহ্য করে এমন ফসল, তারপর অপেক্ষাকৃত সংবেদনশীল ধান।',
+scH:'মাটির স্বাস্থ্যে বেশি অগ্রাধিকার দিলে ডালজাতীয় ফসলসহ ক্রম বেশি গুরুত্ব পায়।',scM:'মাটির স্বাস্থ্য ও ফলন একসঙ্গে বিবেচিত হয়।',scL:'মাটির স্বাস্থ্যের চেয়ে স্বল্পমেয়াদি উপযোগিতা বেশি গুরুত্ব পায়।',chN:'ডেমো বৈশিষ্ট্য। উদাহরণমূলক, নথিভুক্ত ফসল-তথ্য দিয়ে প্রতিস্থাপনযোগ্য।',team:'দল Daydreammer · নাসা স্পেস অ্যাপস চ্যালেঞ্জ ২০২৬'});
+let lang='en';const t=k=>T[lang][k]||T.en[k]||k;
+
+/* ---------- Components (pure functions returning HTML) ---------- */
+const C={
+ languageSwitcher:()=>`<div class="lang" role="group" aria-label="Language"><button data-act="lang" data-v="en" aria-pressed="${lang==='en'}">EN</button><button data-act="lang" data-v="bn" aria-pressed="${lang==='bn'}">বাংলা</button></div>`,
+ demoIndicator:()=>`<div class="demo" role="status"><span class="dot"></span><span>${t('demo')}</span></div>`,
+ navigation:r=>{const L=[['#/explore','explore'],['#/farm','farm'],['#/time-machine','tm'],['#/about','about']];
+  return `<a class="logo" href="#/"><i></i>AgriShift</a><nav class="links" aria-label="Main">${L.map(([h,k])=>`<a href="${h}" ${r===h.slice(1)?'aria-current="page"':''}>${t(k)}</a>`).join('')}</nav><div class="right">${C.languageSwitcher()}${C.demoIndicator()}</div>`},
+ sourceBadge:k=>`<span class="badge src" title="${t(({SRDI:'src1','NASA SMAP':'src2','NASA GPM IMERG':'src3','NASA POWER':'src4','MODIS / VIIRS':'src5'})[k])}">${k}</span>`,
+ scenarioBadge:k=>`<span class="badge ${k==='demoData'?'demo-l':k==='ref'?'':'scen'}">${t(k)}</span>`,
+ statusIndicator:k=>`<span class="status st-${k}"><i></i>${t({live:'live',demo:'demoS',road:'road'}[k])}</span>`,
+ metricCard:(label,val,unit,badge,src,dark)=>`<div class="${dark?'dark-panel':'card'} metric"><div class="row" style="justify-content:space-between"><span class="mute">${label}</span>${C.scenarioBadge(badge)}</div><div class="val">${val}<small> ${unit}</small></div>${src?C.sourceBadge(src):''}</div>`,
+ sectionHeading:(h,p,lvl=2)=>`<div class="sh"><h${lvl}>${h}</h${lvl}>${p?`<p class="mute">${p}</p>`:''}</div>`,
+ cta:(label,href,kind='p',act='')=>`<a class="btn btn-${kind}" href="${href}" ${act}>${label}</a>`,
+ slider:(id,label,min,max,val)=>`<div class="ctl"><div class="top"><label for="${id}">${label}</label><span class="mono" id="${id}-o" style="font-size:1.6rem;color:var(--amber)">${val}</span></div><input type="range" id="${id}" min="${min}" max="${max}" value="${val}" step="5" data-slider></div>`,
+ timeline:(a,b,cur)=>{let s='';for(let y=a;y<=b;y+=5)s+=`<span data-y="${y}" class="${y<=cur?'on':''}">${y}</span>`;return `<div class="tl" id="tl">${s}</div>`},
+ mapContainer:()=>`<div class="map"><span class="badge">${t('sim')}</span><span>${t('map')}</span></div>`,
+ rotationCard:(n,seq,badge)=>`<article class="card rot"><div class="row" style="justify-content:space-between"><h3>${t('rot')} ${n}</h3>${C.scenarioBadge(badge)}</div><div class="mute mono" style="font-size:.75rem;margin-top:8px">${t('seq')}</div><div class="seq">${seq.map(s=>`<span>${s}</span>`).join('')}</div><div class="foot"><button class="btn btn-s" data-act="evidence">${t('fit')}</button>${C.statusIndicator('demo')}</div></article>`,
+ evidenceDrawer:()=>`<button class="x" data-act="close">${t('close')}</button><h2 style="font-size:1.5rem">${t('evT')}</h2><div class="row">${C.scenarioBadge('sim')}${C.scenarioBadge('demoData')}</div><p class="mute">${t('srcNote')}</p><div class="row">${['SRDI','NASA SMAP','NASA GPM IMERG','NASA POWER','MODIS / VIIRS'].map(C.sourceBadge).join('')}</div>`,
+ stub:(k,badge)=>`<div class="stub"><div class="row">${C.scenarioBadge(badge)}</div><p class="mute">${t('next')}</p></div>`
+};
+const rings=`<svg class="rings" viewBox="0 0 560 560" fill="none" stroke="#168C87" aria-hidden="true">${[80,140,200,260].map(r=>`<circle cx="280" cy="280" r="${r}" stroke-opacity="${.9-r/400}"/>`).join('')}<circle cx="280" cy="280" r="200" stroke="#E7A93B" stroke-dasharray="2 8"/></svg>`;
+
+/* ---------- Pages (stubs; each screen is built in its own stage) ---------- */
+const page=(k,d,badge)=>`<div class="wrap" style="padding-top:var(--s6);padding-bottom:var(--s6)">${C.sectionHeading(t('s_'+k),t('d_'+k),1).replace('<h1>','<h1 style="font-size:clamp(2rem,4.5vw,3.4rem)">')}${C.mapContainer()}<div style="margin-top:var(--s3)">${C.stub(k,badge)}</div></div>`;
+const P={
+'/':()=>'',
+'/explore':()=>`<div class="view">${page('explore','','ref')}</div>`,
+'/farm':()=>`<div class="view">${page('farm','','demoData')}</div>`,
+'/time-machine':()=>`<div class="view">${page('tm','','proj')}<div class="wrap" style="padding-bottom:var(--s6)"><div class="dark-panel" style="display:grid;gap:var(--s4)">${C.slider('yr',t('year'),2025,2050,2035)}${C.timeline(2025,2050,2035)}<div class="row">${C.scenarioBadge('proj')}<span class="mute mono" style="font-size:.75rem">${t('sim')}</span></div></div></div></div>`,
+'/results':()=>`<div class="view">${page('res','','sim')}</div>`,
+'/about':()=>`<div class="view wrap" style="padding-top:var(--s6)">
+${C.sectionHeading(t('sys'),t('lead'),1).replace('<h1>','<h1 style="font-size:clamp(2rem,4.5vw,3.4rem)">')}
+<section class="blk">${C.sectionHeading('Data sources',t('srcNote'),3)}<div class="row">${['SRDI','NASA SMAP','NASA GPM IMERG','NASA POWER','MODIS / VIIRS'].map(C.sourceBadge).join('')}</div></section>
+<section class="blk">${C.sectionHeading('Labels & status',null,3)}<div class="row" style="margin-bottom:var(--s3)">${['demoData','sim','proj','ref'].map(C.scenarioBadge).join('')}<span class="badge risk">RISK</span></div><div class="row" style="gap:var(--s4)">${['live','demo','road'].map(C.statusIndicator).join('')}</div></section>
+<section class="blk">${C.sectionHeading('Metric cards',null,3)}<div class="grid">${C.metricCard(t('soil'),'31','%','demoData','NASA SMAP')}${C.metricCard(t('rain'),'8.4','mm/day','ref','NASA GPM IMERG',true)}${C.metricCard(t('salinity'),'4.2','dS/m','sim','SRDI')}</div></section>
+<section class="blk">${C.sectionHeading('Scenario controls',null,3)}<div class="dark-panel" style="display:grid;gap:var(--s4)">${C.slider('yr',t('year'),2025,2050,2035)}${C.timeline(2025,2050,2035)}</div></section>
+<section class="blk">${C.sectionHeading('Rotation cards',null,3)}<div class="grid">${C.rotationCard('A',['Rice','Mustard','Mung'],'sim')}${C.rotationCard('B',['Rice','Wheat','Jute'],'sim')}</div></section>
+<section class="blk">${C.sectionHeading('Map container',null,3)}${C.mapContainer()}</section>
+<section class="blk" style="padding-bottom:var(--s6)">${C.sectionHeading('Actions',null,3)}<div class="row">${C.cta(t('start'),'#/explore')}${C.cta(t('how'),'#/about','s')}<button class="btn btn-s" data-act="evidence">${t('ev')}</button></div></section></div>`
+};
+
+const ST=[['—','23.7°N 90.4°E','22.0°N 89.8°E','22.82°N 89.55°E','DEMO FARM'],[0.98,0.62,0.5,0.4,0.24]];
+const globe=()=>{let g='<circle cx="240" cy="240" r="170" fill="#0B1F2A" stroke="#168C87" stroke-width="1.5"/>';
+ for(let a=-60;a<=60;a+=30){const dy=a/90*170,w=Math.sqrt(170*170-dy*dy);g+=`<line x1="${240-w}" x2="${240+w}" y1="${240+dy}" y2="${240+dy}" stroke="#168C87" stroke-opacity=".35"/>`}
+ for(let i=0;i<4;i++)g+=`<ellipse cx="240" cy="240" ry="170" rx="80" fill="none" stroke="#168C87" stroke-opacity=".4"><animate attributeName="rx" values="4;170;4" dur="16s" begin="-${i*4}s" repeatCount="indefinite"/></ellipse>`;
+ return g+'<circle cx="300" cy="196" r="4" fill="#E7A93B"/><circle class="pr" cx="300" cy="196" r="8" fill="none" stroke="#E7A93B"/>'};
+const bd='<path d="M196 168 L246 148 L286 172 L276 214 L302 246 L286 300 L262 276 L250 322 L232 286 L214 256 L188 240 L204 204Z" fill="#164A3A" fill-opacity=".55" stroke="#D9C7A3" stroke-width="1.5"/><path d="M236 292 L250 322 L262 276" fill="none" stroke="#E7A93B" stroke-width="2"/><circle cx="242" cy="298" r="3.5" fill="#E7A93B"/>';
+const coast=()=>{let g='<path d="M40 200 C110 180 150 230 220 210 S340 170 440 215 L440 60 L40 60Z" fill="#164A3A" fill-opacity=".5" stroke="#D9C7A3"/>';
+ [250,290,330].forEach((y,i)=>g+=`<path d="M40 ${y-30+i*8} C120 ${y-50} 170 ${y+10} 240 ${y-10} S360 ${y-40} 440 ${y}" fill="none" stroke="#E7A93B" stroke-opacity="${.85-i*.25}" stroke-dasharray="3 6"/>`);
+ return g+'<circle cx="240" cy="207" r="4" fill="#E7A93B"/><circle class="pr" cx="240" cy="207" r="8" fill="none" stroke="#E7A93B"/><text x="44" y="424" fill="#8fa5ad" font-family="IBM Plex Mono" font-size="11">STYLIZED BANDS · SIMULATED</text>'};
+const dist=()=>{let g='';for(let r=0;r<5;r++)for(let c=0;c<6;c++){const hi=r==2&&c==3;g+=`<rect x="${90+c*52}" y="${110+r*52}" width="50" height="50" fill="${hi?'#E7A93B':'#164A3A'}" fill-opacity="${hi?.28:.35}" stroke="${hi?'#E7A93B':'#D9C7A3'}" stroke-opacity="${hi?1:.35}"/>`}return g};
+const farm=()=>{let g='';for(let r=0;r<3;r++)for(let c=0;c<4;c++){const hi=r==1&&c==2,x=90+c*80,y=130+r*90;g+=`<rect x="${x}" y="${y}" width="76" height="86" fill="#164A3A" fill-opacity="${hi?.7:.4}" stroke="${hi?'#E7A93B':'#D9C7A3'}" stroke-width="${hi?2:1}" stroke-opacity="${hi?1:.4}"/>`;for(let k=1;k<6;k++)g+=`<line x1="${x+k*12}" x2="${x+k*12}" y1="${y+6}" y2="${y+80}" stroke="#168C87" stroke-opacity="${hi?.7:.25}"/>`}return g};
+const visual=()=>`<div class="vz" id="vz"><div class="ro"><b id="rn">${t('st0')}</b><span class="cd" id="rc">${ST[0][0]}</span><br><span>${t('view')}</span></div><div class="tg">${C.scenarioBadge('sim')}</div><svg viewBox="0 0 480 480" class="gs" role="img" aria-label="${t('st0')} → ${t('st4')}"><g class="st" data-i="0">${globe()}</g><g class="st" data-i="1">${bd}</g><g class="st" data-i="2">${coast()}</g><g class="st" data-i="3">${dist()}</g><g class="st" data-i="4">${farm()}</g><g id="ret" fill="none" stroke="#E7A93B" stroke-width="2"><path d="M60 100V60H100M380 60H420V100M420 380V420H380M100 420H60V380"/><path d="M234 240h12M240 234v12" stroke-width="1"/></g></svg><div class="stg" id="stg">${[0,1,2,3,4].map(i=>`<button data-st="${i}">${t('st'+i)}</button>`).join('')}</div></div>`;
+const tlp=()=>{const ys=[2025,2030,2035,2040,2045,2050];return `<div class="dark-panel tlp rv"><div class="row" style="justify-content:space-between;align-items:flex-end"><div><h2 style="color:#eef0e8;font-size:1.6rem">${t('tlH')}</h2><p class="mute" style="margin-top:8px">${t('tlN')}</p></div><div class="big mono" id="yt">2025</div></div><div class="axis" id="ax"><div class="fl" id="fl"></div>${ys.map((y,i)=>`<div class="nd ${y>2025?'fu':''} ${y==2050?'y50':''}" style="left:${i*20}%" data-y="${y}"><i></i>${y==2050?'<b>':'<span>'}${y}${y==2050?'</b>':'</span>'}</div>`).join('')}</div><div class="row">${C.scenarioBadge('ref').replace(t('ref'),t('base'))}${C.scenarioBadge('proj')}<span class="mute mono" style="font-size:.75rem">2050 · ${t('hz')}</span></div></div>`};
+P['/']=()=>`<div class="hz view"><div class="wrap"><div><div class="kick"><span class="dot"></span>${t('k1')}</div><h1><span>${t('h1a')}</span><span>${t('h1b')}</span></h1><p class="sup">${t('sup')}</p><div class="ctas">${C.cta(t('ctaP'),'#/time-machine')}${C.cta(t('ctaS'),'#/explore','s')}</div></div>${visual()}</div></div>
+<div class="tag-strip"><div class="wrap"><span>${t('tag')}</span><span>${C.scenarioBadge('demoData').replace('badge demo-l','badge demo-l" style="color:var(--amber)')}</span></div></div>
+<div class="wrap" style="padding-top:var(--s6)"><div class="c3">${[['see','seeD',['NASA SMAP','NASA GPM IMERG','MODIS / VIIRS']],['meas','measD',['SRDI','NASA POWER']],['expl','explD',[]]].map((c,i)=>`<div class="card rv d${i}"><h3>${t(c[0])}</h3><p>${t(c[1])}</p><div class="row">${c[2].map(C.sourceBadge).join('')||C.scenarioBadge('sim')}</div></div>`).join('')}</div></div>
+<div class="wrap" style="padding-top:var(--s6)">${tlp()}</div>
+<div class="wrap" style="padding:var(--s6) var(--s4)"><p class="rv" style="font:600 clamp(1.3rem,2.4vw,1.9rem)/1.3 var(--h);max-width:36ch">${t('phil')}</p><p class="mute rv" style="margin:var(--s3) 0">${t('srcNote')}</p><div class="row rv" style="margin-top:var(--s4)">${C.cta(t('ctaP'),'#/time-machine','p','style="background:var(--forest)"')}${C.cta(t('how'),'#/about','s')}</div></div>`;
+let stT,stI=0;
+function setSt(i){stI=i;const v=document.getElementById('vz');if(!v)return;v.querySelectorAll('.st').forEach(g=>g.classList.toggle('on',+g.dataset.i===i));
+ document.querySelectorAll('#stg button').forEach((b,k)=>{b.classList.remove('on');if(k===i){void b.offsetWidth;b.classList.add('on')}});
+ document.getElementById('rn').textContent=t('st'+i);document.getElementById('rc').textContent=ST[0][i];
+ document.getElementById('ret').style.transform='scale('+ST[1][i]+')'}
+function tween(el,a,b,d){const t0=performance.now();(function f(n){const p=Math.min(1,(n-t0)/d);el.textContent=Math.round(a+(b-a)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
+function init(){clearInterval(stT);
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;e.target.classList.add('in');io.unobserve(e.target);
+  if(e.target.querySelector('#ax')){const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;const nd=[...document.querySelectorAll('.nd')];
+   if(rm){document.getElementById('fl').style.width='100%';nd.forEach(n=>n.classList.add('on'));document.getElementById('yt').textContent=2050;return}
+   document.getElementById('fl').style.width='100%';tween(document.getElementById('yt'),2025,2050,3200);nd.forEach((n,i)=>setTimeout(()=>n.classList.add('on'),i*640))}}),{threshold:.25});
+ document.querySelectorAll('.rv').forEach(e=>io.observe(e));
+ if(!document.getElementById('vz'))return;setSt(0);
+ const rm=matchMedia('(prefers-reduced-motion:reduce)').matches,stg=document.getElementById('stg');
+ if(rm){stg.classList.add('paused')}else stT=setInterval(()=>setSt((stI+1)%5),3400);
+ document.getElementById('stg').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;clearInterval(stT);stg.classList.add('paused');setSt(+b.dataset.st)})}
+/* ---------- Global Salinity Explorer ---------- */
+const X=o=>(o+180)*800/360,Y=a=>(90-a)*400/180,pl=a=>a.map(([o,l])=>X(o).toFixed(2)+','+Y(l).toFixed(2)).join(' ');
+const LAND={eu:[[-9,37],[-5,36.5],[3,42],[9,44],[14,41],[19,40],[23,36.5],[26,40],[28,37],[35,36],[35,30],[39,21],[43,13],[52,16],[59,22.5],[56.5,26.5],[51,24.5],[50,26.5],[48,30],[53,27],[57,26],[62,25],[67,24.5],[72,21],[73,17],[76,10],[77.5,8],[80,13],[80.2,15.5],[85,20],[88,21.4],[92,21],[94,19],[94.5,16],[98,16],[98,10],[100,6],[103,1.5],[104,10],[108,12],[106,20],[110,21.5],[117,23],[121,28],[122,31],[120,36],[122,40],[126,38],[129,35],[130,42],[140,48],[143,53],[156,58],[163,60],[180,65],[180,70],[140,73],[100,78],[70,73],[60,70],[30,70],[15,68],[5,62],[5,58],[10,57],[12,55],[8,54],[4,51],[-1,49],[-4,48],[-1,44],[-9,43.5]],
+af:[[-17,21],[-6,36],[10,37],[32,31],[43,12],[51,12],[40,-3],[40,-15],[35,-25],[20,-35],[12,-17],[9,4],[-8,4],[-17,14]],
+na:[[-168,66],[-125,70],[-95,72],[-62,60],[-55,48],[-76,35],[-80,25],[-97,26],[-88,16],[-80,8],[-92,15],[-105,20],[-118,32],[-124,42],[-124,48],[-140,60],[-165,60]],
+sm:[[-80,8],[-62,10],[-50,0],[-35,-6],[-40,-22],[-58,-38],[-66,-55],[-74,-50],[-72,-30],[-80,-5]],
+au:[[114,-22],[130,-12],[142,-11],[153,-26],[147,-38],[135,-34],[115,-34]]};
+const BD=[[88.5,26.5],[89.4,26.1],[89.8,25.9],[89.8,25.3],[90.4,25.15],[91,25.15],[91.6,25.15],[92.1,24.9],[92.4,24.2],[91.9,23.7],[91.9,23],[92,22],[92.3,20.8],[92,21.1],[91.8,22.2],[91.2,22.6],[90.6,22],[90.2,21.8],[89.6,21.8],[89.1,21.7],[88.9,22],[88.75,22.6],[89,23.2],[88.6,24],[88.2,24.5],[88.5,25.2],[88.1,25.8]];
+const CO=[[88.9,22],[89.1,21.75],[89.6,21.8],[90.2,21.85],[90.6,22],[91,22.35],[91.5,22.4],[91.85,22.2],[92,21.6],[92.3,20.85]];
+const CB=[[88.8,22.7],[89.5,23],[90.5,23.05],[91.3,23],[91.9,22.5],[92,21.9],[92.3,20.8],[92,21.1],[91.8,22.2],[91.2,22.6],[90.6,22],[90.2,21.8],[89.6,21.8],[89.1,21.7],[88.9,22]];
+const zone=d=>pl(CO.concat(CO.slice().reverse().map(([o,l])=>[o,l+d])));
+const SER={sal:[30,38,46,55,63,71],rain:[52,63,44,58,41,60],fw:[35,42,50,57,66,72]};
+const Z=[[400,200,1],[X(80),Y(22),4.5],[X(90.3),Y(23.6),28],[X(90.3),Y(22.2),60]];
+const LVOP=[{c:[1,1,.3,.12],g:[.5,.35,0,0],f:[0,0,.6,.6],z:[0,0,1,1],cb:[0,0,0,1],mk:[1,1,0,0],kh:[0,0,0,1]}][0];
+let EX={lv:0,y:2025,d:.15,pt:null};
+const YS=[2025,2030,2035,2040,2045,2050],idxOf=y=>(y-2025)/5;
+function spark(v,i){const p=v.map((n,k)=>[k*26+4,32-n*.32]);return `<svg width="140" height="38" viewBox="0 0 140 38" aria-hidden="true"><polyline points="${p.map(a=>a.join(',')).join(' ')}" fill="none" stroke="#8fa5ad" stroke-opacity=".55" stroke-width="1.5"/><polyline points="${p.slice(0,i+1).map(a=>a.join(',')).join(' ')}" fill="none" stroke="#E7A93B" stroke-width="2"/><circle cx="${p[i][0]}" cy="${p[i][1]}" r="4" fill="#E7A93B"/></svg>`}
+function sideHtml(){const i=idxOf(EX.y),fut=EX.y>2025;
+ if(EX.lv<1)return `<div class="card"><h3>${t('st1')}</h3><p class="mute" style="margin-top:8px">${t('selP')}</p></div>`;
+ const row=(k,lab,word,hi)=>`<div class="ind ${hi?'hi':''}"><b>${lab}</b>${spark(SER[k],i)}<span class="v">${word} · ${SER[k][i]}</span></div>`;
+ return `<div class="dark-panel"><div class="row" style="justify-content:space-between"><h2 style="font-size:1.5rem">${t('st1')}</h2>${C.scenarioBadge(fut?'proj':'ref')}</div><div class="row" style="margin:10px 0 var(--s2)">${C.scenarioBadge('demoData')}</div>${row('sal',t('salS'),t('vInc'),i>=4)}${row('rain',t('rain'),t('vVar'))}${row('fw',t('fresh'),t('vPres'),i>=4)}<p class="mute mono" style="font-size:.68rem;margin-top:8px">${t('idx')}</p></div>
+ <div class="card"><p>${t('ctx')}</p></div>`}
+P['/explore']=()=>`<div class="view"><div class="wrap exh">${C.sectionHeading(t('exH'),t('exS'),1).replace('<h1>','<h1 style="font-size:clamp(2rem,4.5vw,3.6rem)">')}</div>
+<div class="wrap"><div class="exg"><div class="exm" id="exmap"><svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${t('gl')} → ${t('sa')} → ${t('st1')} → ${t('st2')}"><g id="wg">
+<g id="gc"><rect x="-400" y="-200" width="1600" height="800" fill="#071822"/>${[-150,-120,-90,-60,-30,0,30,60,90,120,150,180].map(o=>`<line x1="${X(o)}" x2="${X(o)}" y1="0" y2="400" stroke="#168C87" stroke-opacity=".3"/>`).join('')}${[-60,-30,0,30,60].map(a=>`<line y1="${Y(a)}" y2="${Y(a)}" x1="0" x2="800" stroke="#168C87" stroke-opacity=".3"/>`).join('')}</g>
+<g id="lc">${Object.values(LAND).map(a=>`<polygon points="${pl(a)}" fill="#12352f" stroke="#D9C7A3" stroke-opacity=".45"/>`).join('')}</g>
+<g id="gf">${[85,86,87,88,89,90,91,92,93,94,95].map(o=>`<line x1="${X(o)}" x2="${X(o)}" y1="${Y(28)}" y2="${Y(19)}" stroke="#168C87" stroke-opacity=".35"/>`).join('')}${[19,20,21,22,23,24,25,26,27,28].map(a=>`<line y1="${Y(a)}" y2="${Y(a)}" x1="${X(85)}" x2="${X(95)}" stroke="#168C87" stroke-opacity=".35"/>`).join('')}</g>
+<g id="bdg"><polygon id="bd" points="${pl(BD)}" fill="#164A3A" fill-opacity=".85" stroke="#D9C7A3" stroke-width="1.5" style="cursor:pointer"/></g>
+<g id="zn"><polygon id="zp" points="${zone(.15)}" fill="#E7A93B" fill-opacity=".4" stroke="#E7A93B" stroke-opacity=".8" stroke-dasharray="4 4"/></g>
+<g id="cb"><polygon points="${pl(CB)}" fill="none" stroke="#168C87" stroke-width="1.5" stroke-dasharray="2 5"/></g>
+<g id="kh"><circle id="kc" cx="${X(89.55)}" cy="${Y(22.82)}" fill="#0B1F2A" stroke="#eef0e8" stroke-width="1.5"/><text id="kt" x="${X(89.55)}" y="${Y(22.82)}" fill="#eef0e8" font-family="IBM Plex Mono" style="vector-effect:none">KHULNA</text></g>
+<g id="mk"><circle id="hit" cx="${X(90.3)}" cy="${Y(23.6)}" fill="#E7A93B" fill-opacity=".12" stroke="none" style="cursor:pointer"/><circle id="mr" class="pr" cx="${X(90.3)}" cy="${Y(23.6)}" fill="none" stroke="#E7A93B"/><circle id="m0" cx="${X(90.3)}" cy="${Y(23.6)}" fill="#E7A93B"/></g></g></svg>
+<div class="ov tl-l" id="exb"></div><div class="ov bc" id="bc">${[0,1,2,3].map(i=>`<button data-lv="${i}">${t(['gl','sa','st1','st2'][i])}</button>`).join('')}</div>
+<div class="ov hint" id="exh">${t('hint')}</div><div class="ov yr"><span id="exy">2025</span><small id="exl"></small></div>
+<div class="ov lg"><i></i><span><em>${t('lo')}</em><em>${t('hi')}</em></span></div></div>
+<div class="side" id="exside"></div></div>
+<div class="dark-panel exc" style="margin-top:var(--s3)"><div class="yctl"><div class="top"><h3 style="color:#eef0e8">${t('yrL')}</h3><button class="btn btn-s" id="exp" style="color:#eef0e8;border-color:#ffffff40">${t('play')}</button></div>
+<input type="range" id="exs" min="2025" max="2050" step="5" value="2025" aria-label="${t('yrL')}"><div class="axis" id="exax"><div class="fl" id="exfl"></div>${YS.map((y,i)=>`<button class="nd ${y>2025?'fu':''} ${y==2050?'y50':''}" style="left:${i*20}%" data-y="${y}"><i></i>${y==2050?'<b>':'<span>'}${y}${y==2050?'</b>':'</span>'}</button>`).join('')}</div>
+<div class="row"><span id="exb2"></span><span class="mute mono" style="font-size:.72rem">${t('dN')}</span></div></div></div></div>
+<div class="wrap" style="padding-top:var(--s6)">${C.sectionHeading(t('srcH'),null,2)}<div class="src5 rv">${[['SRDI','src1','L'],['NASA SMAP','src2','E'],['NASA GPM IMERG','src3','E'],['NASA POWER','src4','E'],['MODIS / VIIRS','src5','E']].map(a=>`<div class="card">${C.sourceBadge(a[0])}<span class="mono">${t('type'+a[2])}</span><p class="mute" style="font-size:.9rem">${t(a[1])}</p></div>`).join('')}</div><p class="mute rv" style="margin-top:var(--s3)">${t('srcNote')}</p></div>
+<div class="wrap" style="padding:var(--s6) var(--s4)"><div class="ctab rv"><p>${t('ctx')}</p>${C.cta(t('cta2'),'#/farm')}</div></div></div>`;
+function setLv(l){EX.lv=l;const z=Z[l],g=document.getElementById('wg');if(!g)return;
+ g.style.transform=`translate(400px,200px) scale(${z[2]}) translate(${-z[0]}px,${-z[1]}px)`;
+ const S=z[2],o=(id,v)=>{const e=document.getElementById(id);e.style.opacity=v;e.style.pointerEvents='none'};
+ o('gc',LVOP.g[l]?1:1);o('lc',LVOP.c[l]);o('gf',LVOP.f[l]);o('zn',LVOP.z[l]);o('cb',LVOP.cb[l]);o('mk',LVOP.mk[l]);o('kh',LVOP.kh[l]);
+ document.getElementById('bdg').style.opacity=1;
+ const r=(id,v)=>document.getElementById(id).setAttribute('r',v/S);r('m0',6);r('mr',12);r('hit',30);r('kc',5);
+ const kt=document.getElementById('kt');kt.setAttribute('font-size',12/S);kt.setAttribute('dx',9/S);kt.setAttribute('dy',4/S);
+ document.getElementById('hit').style.pointerEvents=l<2?'all':'none';
+ document.getElementById('bd').style.pointerEvents=l<3?'all':'none';
+ document.querySelectorAll('#bc button').forEach((b,i)=>b.classList.toggle('on',i===l));
+ document.getElementById('exh').style.opacity=l===0?1:0;
+ document.getElementById('exside').innerHTML=sideHtml()}
+function setYr(y){EX.y=y;const i=idxOf(y),fut=y>2025;
+ document.getElementById('exy').textContent=y;document.getElementById('exs').value=y;
+ document.getElementById('exfl').style.width=(i/5*100)+'%';
+ document.querySelectorAll('#exax .nd').forEach(n=>n.classList.toggle('on',+n.dataset.y<=y));
+ const bb=(fut?C.scenarioBadge('proj'):C.scenarioBadge('ref'))+C.scenarioBadge('demoData');
+ document.getElementById('exb').innerHTML=bb;document.getElementById('exb2').innerHTML=bb;
+ document.getElementById('exl').textContent=fut?t('proj'):t('exBase');
+ document.getElementById('exside').innerHTML=sideHtml();
+ const a=EX.d,b=.15+i/5*.55,t0=performance.now(),zp=document.getElementById('zp');
+ (function f(n){const p=Math.min(1,(n-t0)/900),e=1-Math.pow(1-p,3),d=a+(b-a)*e;EX.d=d;zp.setAttribute('points',zone(d));zp.setAttribute('fill-opacity',.25+.4*(d-.15)/.55+.15);if(p<1)requestAnimationFrame(f)})(t0)}
+function initEx(){clearInterval(EX.pt);const m=document.getElementById('exmap');if(!m)return;EX.d=.15;
+ m.addEventListener('click',e=>{if(e.target.closest('#bd,#hit')&&EX.lv<3)setLv(EX.lv+1)});
+ document.getElementById('bc').addEventListener('click',e=>{const b=e.target.closest('[data-lv]');if(b)setLv(+b.dataset.lv)});
+ document.getElementById('exax').addEventListener('click',e=>{const b=e.target.closest('[data-y]');if(b){clearInterval(EX.pt);setYr(+b.dataset.y)}});
+ document.getElementById('exs').addEventListener('input',e=>{clearInterval(EX.pt);setYr(+e.target.value)});
+ const pb=document.getElementById('exp');pb.addEventListener('click',()=>{if(EX.pt){clearInterval(EX.pt);EX.pt=null;pb.textContent=t('play');return}
+  if(EX.y>=2050)setYr(2025);pb.textContent=t('pause');EX.pt=setInterval(()=>{if(EX.y>=2050){clearInterval(EX.pt);EX.pt=null;pb.textContent=t('play');return}setYr(EX.y+5)},1500)});
+ EX.lv=0;EX.y=2025;setLv(0);setYr(2025)}
+/* ---------- My Farm ---------- */
+const farmMap=()=>{const W=[112,90,124,100,108,92],H=[92,104,88,96];let g='',y=24;
+ H.forEach((h,r)=>{let x=24;W.forEach((w,c)=>{if(!(r==1&&c==2)){const o=.28+((r*7+c*3)%5)*.07;g+=`<rect x="${x}" y="${y}" width="${w-6}" height="${h-6}" fill="#164A3A" fill-opacity="${o}" stroke="#D9C7A3" stroke-opacity=".28"/>`}x+=w});y+=h});
+ const sx=24+112+90,sy=24+92;let rows='';for(let k=1;k<12;k++)rows+=`<line x1="${sx+k*10}" x2="${sx+k*10-3}" y1="${sy+4}" y2="${sy+92}" stroke="#168C87" stroke-opacity=".55"/>`;
+ return `<svg viewBox="0 0 640 400" role="img" aria-label="${t('mapN')}"><rect width="640" height="400" fill="#071822"/>${g}
+ <path d="M18 116 C160 104 300 132 640 112" fill="none" stroke="#168C87" stroke-width="5" stroke-opacity=".55"/><path d="M18 220 C200 232 360 208 640 224" fill="none" stroke="#168C87" stroke-width="3" stroke-opacity=".4"/>
+ <path d="M560 0 C540 120 590 260 566 400" fill="none" stroke="#168C87" stroke-width="9" stroke-opacity=".35"/><path d="M0 330 L640 318" stroke="#D9C7A3" stroke-opacity=".35" stroke-width="2" stroke-dasharray="10 6"/>
+ <rect x="${sx}" y="${sy}" width="118" height="98" fill="#164A3A" fill-opacity=".85"/>${rows}
+ <rect class="draw" x="${sx}" y="${sy}" width="118" height="98" fill="none" stroke="#E7A93B" stroke-width="2.5"/>
+ ${[[0,0],[118,0],[118,98],[0,98]].map(p=>`<rect x="${sx+p[0]-4}" y="${sy+p[1]-4}" width="8" height="8" fill="#071822" stroke="#E7A93B"/>`).join('')}
+ <path d="M${sx+118} ${sy+8} L${sx+170} ${sy-34}" stroke="#E7A93B" stroke-width="1.2"/><rect x="${sx+170}" y="${sy-52}" width="112" height="24" rx="3" fill="#0B1F2A" stroke="#E7A93B"/><text x="${sx+226}" y="${sy-36}" text-anchor="middle" fill="#E7A93B" font-family="IBM Plex Mono" font-size="12" font-weight="500">${t('dfarm')}</text>
+ <path d="M604 40 l7 -18 l7 18 l-7 -5z" fill="#eef0e8"/><text x="611" y="60" text-anchor="middle" fill="#8fa5ad" font-family="IBM Plex Mono" font-size="10">N</text></svg>
+ <div class="ov a">${C.scenarioBadge('demoData')}<span class="badge" style="color:#8fa5ad;border-color:#ffffff33">22.82°N 89.55°E · ${t('st3')}</span></div><div class="ov b">${t('mapN')}</div><div class="ov c">${t('plot')} · ${t('dfarm')}</div>`};
+const mtr=(p,z)=>`<div class="mtr ${z?'z':''}"><i style="left:${p}%"></i></div>`;
+const lv=(n,k)=>`<div class="lv ${k}">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</div>`;
+P['/farm']=()=>`<div class="view"><div class="wrap exh"><div class="trail rv">${['st0','st1','st3'].map(k=>`<span>${t(k)}</span>`).join('')}<span><b>${t('st4')}</b></span></div>${C.sectionHeading(t('farm'),null,1).replace('<h1>','<h1 style="font-size:clamp(2.2rem,5vw,4rem)">')}<div class="row" style="margin-top:var(--s3)"><span class="mono" style="font-size:1.05rem">${t('loc')}</span>${C.scenarioBadge('demoData')}</div></div>
+<div class="wrap"><div class="fg"><div class="fm rv">${farmMap()}</div>
+<div class="card rv d1"><div class="row" style="justify-content:space-between"><h2 style="font-size:1.35rem">${t('profH')}</h2>${C.sourceBadge('SRDI')}</div><div class="row" style="margin:10px 0 var(--s2)">${C.scenarioBadge('demoData').replace(t('demoData'),t('dsd'))}</div>
+<div class="sp"><span class="k">${t('ec')}</span><span class="v">5.8<small> dS/m</small></span><div class="m">${mtr(5.8/16*100,1)}</div></div>
+<div class="sp"><span class="k">${t('ph')}</span><span class="v">7.2</span><div class="m">${mtr((7.2-4)/6*100,0)}</div></div>
+${['nit','phos','pot'].map(k=>`<div class="sp"><span class="k">${t(k)}</span><span class="dv">${t('dv')}</span></div>`).join('')}
+<div class="sp"><span class="k">${t('tex')}</span><span class="v" style="font-size:1.05rem">${t('clay')}</span></div></div></div>
+<div class="stt rv" style="margin-top:var(--s3)">${[['salSt','mh',lv(3,'a'),'a'],['wa','nor',lv(2,'t'),'t'],['sh','na',lv(2,'a'),'a']].map(a=>`<div class="card"><span class="mute" style="font-size:.85rem">${t(a[0])}</span><b>${t(a[1])}</b>${a[2]}</div>`).join('')}</div>
+<p class="mute mono rv" style="font-size:.72rem;margin-top:var(--s2)">${C.scenarioBadge('sim')} ${t('aN')}</p></div>
+<div class="wrap" style="padding-top:var(--s5)"><div class="upl rv"><div><div class="row" style="margin-bottom:var(--s3)">${C.scenarioBadge('demoData').replace(t('demoData'),t('concept'))}</div><h2>${t('upH')}</h2><p class="mute" style="margin-top:var(--s3)">${t('upD')}</p></div>
+<div class="dz"><svg viewBox="0 0 44 44" fill="none" stroke="#168C87" stroke-width="1.6" aria-hidden="true"><path d="M11 5h16l8 8v26H11z"/><path d="M27 5v8h8M17 24h14M17 30h14M22 18v-6M19 15l3-3 3 3"/></svg><button class="btn btn-p" id="upb" style="background:var(--teal)">${t('upH')}</button><span class="mute mono" style="font-size:.72rem">${t('upNote')}</span>
+<div class="upp" id="upp"><div class="mono mute" style="margin-bottom:6px">${t('fields')}</div>${['ec','ph','nit','phos','pot','tex'].map(k=>`<div><span>${t(k)}</span><span class="mute">— — —</span></div>`).join('')}</div></div></div></div>
+<div class="wrap" style="padding-top:var(--s5)"><div class="cg rv"><div class="dark-panel metric"><div class="row" style="justify-content:space-between"><span class="mute">${t('condH')}</span>${C.statusIndicator('demo')}</div><div class="cg" style="margin-top:var(--s3);gap:var(--s4)"><div><span class="mute">${t('soil')}</span><div class="val">31<small> %</small></div></div><div><span class="mute">${t('temp')}</span><div class="val">29<small> °C</small></div></div></div><div class="row" style="margin-top:var(--s2)">${C.scenarioBadge('demoData')}</div></div>
+<div class="card" style="display:grid;gap:var(--s3);align-content:space-between"><div class="row">${C.statusIndicator('road')}</div><p class="mute">${t('fRoad')}</p></div></div></div>
+<div class="wrap" style="padding-top:var(--s6)">${C.sectionHeading(t('srcH'),t('srcE'),2)}<div class="src5 rv">${[['SRDI','src1','L'],['NASA SMAP','src2','E'],['NASA GPM IMERG','src3','E'],['NASA POWER','src4','E'],['MODIS / VIIRS','src5','E']].map(a=>`<div class="card">${C.sourceBadge(a[0])}<span class="mono">${t('type'+a[2])}</span><p class="mute" style="font-size:.9rem">${t(a[1])}</p></div>`).join('')}</div><p class="mute rv" style="margin-top:var(--s3)">${t('srcNote')}</p></div>
+<div class="wrap" style="padding:var(--s6) var(--s4)"><div class="ctab rv"><p>${t('phil')}</p>${C.cta(t('ctaF'),'#/time-machine')}</div></div></div>`;
+function initFarm(){const b=document.getElementById('upb');if(b)b.addEventListener('click',()=>document.getElementById('upp').classList.toggle('open'))}
+/* ---------- Farm Time Machine ---------- */
+const TM={y:2050,R:-15,S:1.2,W:1,P:2,cur:null,tgt:null,raf:0,last:0,seen:false};
+const CROPS=[['Rice','ধান',86,.15,.9,.3,0],['Maize','ভুট্টা',82,.3,.6,.4,0],['Mustard','সরিষা',74,.5,.35,.5,0],['Mung bean','মুগডাল',78,.35,.4,.5,1],['Sunflower','সূর্যমুখী',72,.55,.35,.5,0]];
+const IM={en:{base:['Today’s demo baseline','Move the timeline forward to explore what could change.'],sal:[['Salinity close to today’s baseline','Salt tolerance matters less for crop choice.'],['Moderately higher salinity stress','Salt-sensitive crops become less suitable.'],['Higher salinity stress','Some crops become less suitable.'],['Much higher salinity stress','Salt-tolerant options move to the front.']],wat:[['Normal water availability','A wider range of crops stays feasible.'],['Limited water','Water-demanding crops become less attractive.']],rain:[['Lower rainfall','Seasonal water gaps could widen.'],['Rainfall near today’s range','Rainfall is a smaller constraint.'],['Higher rainfall','Drainage and waterlogging matter more.']],pri:[['Low soil-health priority','Short-term suitability drives the options.'],['Balanced soil-health priority','Both yield and soil health shape the options.'],['High soil-health priority','Rotations with beneficial crop sequences become more relevant.']]},
+bn:{base:['আজকের ডেমো ভিত্তি','কী বদলাতে পারে তা দেখতে টাইমলাইন এগিয়ে নিন।'],sal:[['লবণাক্ততা আজকের কাছাকাছি','ফসল বাছাইয়ে লবণসহনশীলতা কম গুরুত্বপূর্ণ।'],['কিছুটা বেশি লবণাক্ততার চাপ','লবণ-সংবেদনশীল ফসল কম উপযোগী হয়।'],['বেশি লবণাক্ততার চাপ','কিছু ফসল কম উপযোগী হয়ে ওঠে।'],['অনেক বেশি লবণাক্ততার চাপ','লবণসহনশীল বিকল্প এগিয়ে আসে।']],wat:[['স্বাভাবিক পানির প্রাপ্যতা','বিস্তৃত ফসল সম্ভাব্য থাকে।'],['সীমিত পানি','বেশি পানি লাগে এমন ফসল কম আকর্ষণীয় হয়।']],rain:[['কম বৃষ্টিপাত','মৌসুমি পানির ঘাটতি বাড়তে পারে।'],['বৃষ্টিপাত আজকের কাছাকাছি','বৃষ্টিপাত কম বাধা হয়।'],['বেশি বৃষ্টিপাত','নিষ্কাশন ও জলাবদ্ধতা বেশি গুরুত্বপূর্ণ।']],pri:[['কম মাটি-স্বাস্থ্য অগ্রাধিকার','স্বল্পমেয়াদি উপযোগিতা বিকল্প নির্ধারণ করে।'],['ভারসাম্যপূর্ণ মাটি-স্বাস্থ্য অগ্রাধিকার','ফলন ও মাটির স্বাস্থ্য দুটোই বিকল্প গড়ে।'],['বেশি মাটি-স্বাস্থ্য অগ্রাধিকার','উপকারী ফসলক্রমের পর্যায়ক্রম আরও প্রাসঙ্গিক হয়।']]}};
+const gid=i=>document.getElementById(i),lerp=(a,b,k)=>a+(b-a)*k,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const mixc=(a,b,k)=>'#'+a.map((v,i)=>Math.round(lerp(v,b[i],k)).toString(16).padStart(2,'0')).join('');
+const tmViz=()=>{let rain='',cr='',pn='';
+ for(let i=0;i<24;i++)rain+=`<line class="rd" x1="${14+i*26.5}" x2="${11+i*26.5}" y1="0" y2="16" stroke="#7fd0cc" stroke-opacity=".8" stroke-width="1.4" style="animation-delay:-${((i*.37)%1.7).toFixed(2)}s;animation-duration:${(1.5+(i%4)*.18).toFixed(2)}s"/>`;
+ for(let i=0;i<16;i++)cr+=`<rect class="cry" x="${16+i*39+(i%3)*5}" y="${141+(i%2)*6}" width="${4+(i%3)*2}" height="4" fill="#F5F4EE" opacity="0"/>`;
+ for(let i=0;i<9;i++)pn+=`<line class="stm" x1="${52+i*68}" x2="${52+i*68}" y1="140" y2="100" stroke="#168C87" stroke-width="2"/><circle class="lf" cx="${52+i*68}" cy="100" r="4.5" fill="#168C87"/>`;
+ return `<svg viewBox="0 0 640 380" role="img" aria-label="${t('tmH')}"><rect width="640" height="380" fill="#071822"/><g>${rain}</g><rect y="140" width="640" height="240" fill="#1a2f2a"/><rect id="vTop" y="140" width="640" height="56" fill="#2b3a2e"/><rect id="vSal" y="300" width="640" height="80" fill="#E7A93B" fill-opacity=".3"/><rect id="vFr" y="230" width="640" height="70" fill="#168C87" fill-opacity=".5"/><g class="wv"><polyline id="vWp" points="" fill="none" stroke="#7fd0cc" stroke-width="1.6"/></g><line id="vCr" x1="0" x2="640" y1="140" y2="140" stroke="#F5F4EE" stroke-width="3" stroke-dasharray="7 5" opacity="0"/>${cr}${pn}<g font-family="IBM Plex Mono" font-size="10"><text x="12" y="130" fill="#8fa5ad">${t('lSf')}</text><text id="vTf" x="12" y="250" fill="#bfeeea">${t('lFr')}</text><text id="vTs" x="12" y="330" fill="#f0c878">${t('lSa')}</text></g></svg>`};
+const tmCtlHtml=()=>`<div class="cts" id="tmc"><div class="card ct"><div class="top"><span>${t('rainC')}</span><b id="cv-r"></b></div><input type="range" class="rng" id="c-r" min="-20" max="20" step="1" value="${TM.R}" aria-label="${t('rainC')}"><div class="ends"><span>-20%</span><span>0</span><span>+20%</span></div></div>
+<div class="card ct"><div class="top"><span>${t('salC')}</span><b id="cv-s"></b></div><input type="range" class="rng" id="c-s" min="0" max="2" step="0.1" value="${TM.S}" aria-label="${t('salC')}"><div class="ends"><span>${t('current')}</span><span>+2.0 dS/m</span></div></div>
+<div class="card ct"><div class="top"><span>${t('watC')}</span></div><div class="seg" data-seg="w" style="--n:2"><span class="sgi"></span><button data-v="0">${t('wNor')}</button><button data-v="1">${t('wLim')}</button></div></div>
+<div class="card ct"><div class="top"><span>${t('soilC')}</span></div><div class="seg" data-seg="p" style="--n:3"><span class="sgi"></span><button data-v="0">${t('pLo')}</button><button data-v="1">${t('pMd')}</button><button data-v="2">${t('pHi')}</button></div></div></div>`;
+P['/time-machine']=()=>`<div class="view"><div class="wrap exh"><div class="trail rv">${['st0','st1','st3','st4'].map(k=>`<span>${t(k)}</span>`).join('')}<span><b>${t('tm')}</b></span></div>${C.sectionHeading(t('tmH'),t('tmS'),1).replace('<h1>','<h1 style="font-size:clamp(2.2rem,5vw,4rem)">')}<p style="margin-top:var(--s3);font:600 1.1rem/1.4 var(--h);max-width:52ch">${t('uni')}</p></div>
+<div class="wrap"><div class="dark-panel tmx" id="tmw"><div class="tmtop"><div class="phs" id="tmph"><span>${t('ph0')}</span><span>${t('ph1')}</span><span id="tmph2"></span></div><div class="row">${C.scenarioBadge('sim')}${C.scenarioBadge('proj')}</div></div>
+<div class="tmg"><div class="viz">${tmViz()}<div class="gr" id="tmgr"></div><div class="yv"><b id="tmY">2025</b><small id="tmYs"></small></div>
+<div class="gau"><div><small>${t('gSoil')}</small><b id="g-so"></b><div class="bar"><i id="b-so"></i></div></div><div><small>${t('wa')}</small><b id="g-wa"></b><div class="bar"><i id="b-wa"></i></div></div><div><small>${t('salS')}</small><b id="g-st"></b><div class="bar"><i class="am" id="b-st"></i></div></div><div><small>${t('gCrop')}</small><b id="g-cs"></b><div class="bar"><i id="b-cs"></i></div></div></div></div>
+<div class="sum"><h2 id="sumH" style="font-size:1.5rem;color:#eef0e8"></h2><span class="mono" style="font-size:.72rem;color:var(--amber);margin:6px 0 var(--s3)">${t('ps')}</span>
+<div class="sr"><span class="k">${t('sRain')}</span><b id="s-r"></b></div><div class="sr"><span class="k">${t('salS')}</span><b id="s-s"></b></div><div class="sr"><span class="k">${t('wa')}</span><b id="s-w"></b></div><div class="sr"><span class="k">${t('sPri')}</span><b id="s-p"></b></div>
+<div class="sr" style="align-items:center"><span class="k">${t('ec2')}</span><span class="mono" id="s-e" style="color:#eef0e8"></span></div></div></div>
+<div><div class="row" style="justify-content:space-between"><span class="mono mute" style="font-size:.72rem">${t('tlA')}</span><button class="btn btn-s" id="tmr" style="color:#eef0e8;border-color:#ffffff40;padding:8px 14px">${t('replay')}</button></div>
+<div class="axis" id="tax"><div class="fl" id="tfl"></div>${[2025,2030,2035,2040,2045,2050].map((y,i)=>`<button class="nd ${y>2025?'fu':''} ${y==2050?'y50':''}" style="left:${i*20}%" data-y="${y}"><i></i>${y==2050?'<b>':'<span>'}${y}${y==2050?'</b>':'</span>'}</button>`).join('')}</div></div></div></div>
+<div class="wrap" style="padding-top:var(--s5)"><div class="row" style="justify-content:space-between;margin-bottom:var(--s3)"><div><h2 style="font-size:1.6rem">${t('ctlH')}</h2><p class="mute" style="margin-top:6px">${t('ctlN')}</p></div>${C.scenarioBadge('sim')}</div>${tmCtlHtml()}</div>
+<div class="wrap" style="padding-top:var(--s5)"><div class="two"><div class="card"><div class="row" style="justify-content:space-between;margin-bottom:var(--s2)"><h2 style="font-size:1.4rem">${t('meanH')}</h2>${C.scenarioBadge('sim')}</div><div id="tmi"></div><p class="mute mono" style="font-size:.72rem;margin-top:var(--s2)">${t('meanN')}</p></div>
+<div class="dark-panel"><div class="row" style="justify-content:space-between;margin-bottom:var(--s2)"><h2 style="font-size:1.4rem;color:#eef0e8">${t('cropH')}</h2>${C.scenarioBadge('demoData')}</div><div id="tmcb">${CROPS.map((c,i)=>`<div class="cb"><span>${lang==='bn'?c[1]:c[0]}</span><div class="tk"><i id="cb${i}"></i></div><b id="cn${i}"></b></div>`).join('')}</div><p class="mute mono" style="font-size:.7rem;margin-top:var(--s2)">${t('cropN')}</p></div></div></div>
+<div class="wrap" style="padding:var(--s6) var(--s4)"><div class="ctab rv"><p>${t('tmC')}</p>${C.cta(t('ctaR'),'#/results')}</div></div></div>`;
+function tmEff(){const c=TM.cur;return{r:c.R*c.p,s:c.S*c.p,w:c.w*c.p,pr:c.pr*c.p}}
+function tmScore(cr,e){return cl(cr[2]-(e.s/2)*40*(1-cr[3])-e.w*28*cr[4]-(e.r<0?(-e.r/20)*16*cr[4]:(e.r/20)*8*cr[5])+10*e.pr*cr[6],8,96)}
+function tmRender(){const c=TM.cur,e=tmEff(),f=(TM.y-2025)/25,mv=Math.abs(c.p-f)>.012,ph=(c.p<.03&&(mv||f===0))?0:mv?1:f===0?0:2,yr=Math.round(2025+25*c.p);
+ document.querySelectorAll('#tmph span').forEach((n,i)=>n.classList.toggle('on',i===ph));
+ gid('tmph2').textContent=TM.y+' '+t('scen');gid('tmY').textContent=yr;gid('tmYs').textContent=ph===0?t('cur'):t('ps');
+ gid('sumH').textContent=ph===0?t('ph0'):(mv?yr:TM.y)+' '+t('scen');gid('tmgr').style.opacity=c.p*.32;
+ gid('tfl').style.width=(c.p*100)+'%';
+ document.querySelectorAll('#tax .nd').forEach(n=>{n.classList.toggle('on',+n.dataset.y<=2025+25*c.p+.01);n.classList.toggle('sel',+n.dataset.y===TM.y)});
+ const r=Math.round(e.r);gid('s-r').textContent=(r>0?'+':'')+r+'%';gid('s-s').textContent=e.s<.05?t('current'):'+'+e.s.toFixed(1)+' dS/m';
+ gid('s-w').textContent=e.w>.5?t('wLim'):t('wNor');gid('s-p').textContent=[t('pLo'),t('pMd'),t('pHi')][TM.P];gid('s-e').textContent=(5.8+e.s).toFixed(1)+' dS/m';
+ const sc=CROPS.map(cr=>tmScore(cr,e)),cs=sc.reduce((a,b)=>a+b,0)/sc.length;
+ const st=62+e.s/2*30,wa=cl(78-e.w*30+e.r*.9,8,98),so=cl(52-e.s/2*20-e.w*4,8,90);
+ gid('g-st').textContent=st<70?t('mh'):t('high');gid('g-wa').textContent=wa>=60?t('gNor'):wa>=42?t('gSome'):t('gLim');gid('g-so').textContent=so>=58?t('modR'):so>=40?t('na'):t('redu');gid('g-cs').textContent=Math.round(cs)+' / 100';
+ [['st',st],['wa',wa],['so',so],['cs',cs]].forEach(([k,v])=>gid('b-'+k).style.width=v+'%');
+ sc.forEach((v,i)=>{const b=gid('cb'+i);b.style.width=v+'%';b.className=v>=65?'':v>=48?'sd':'am';gid('cn'+i).textContent=Math.round(v)});
+ /* scenario visualization */
+ const n=Math.round(14+e.r/20*8);document.querySelectorAll('.rd').forEach((l,i)=>l.style.display=i<n?'':'none');
+ const k=e.s/2;gid('vTop').setAttribute('fill',mixc([43,58,46],[139,125,90],k));gid('vCr').setAttribute('opacity',Math.min(1,k*1.1));
+ document.querySelectorAll('.cry').forEach((q,i)=>q.style.opacity=(i/16<k*1.05)?.9:0);
+ const lvl=cl(.78*(1-.32*e.w)+e.r/20*.1,.3,.95),wt=380-lvl*170,it=380-(380-wt)*(.36+.28*k);
+ const fr=gid('vFr');fr.setAttribute('y',wt);fr.setAttribute('height',it-wt);const sa=gid('vSal');sa.setAttribute('y',it);sa.setAttribute('height',380-it);
+ let pts='';for(let x=-20;x<=660;x+=10)pts+=x+','+(wt+Math.sin(x/28)*3).toFixed(1)+' ';gid('vWp').setAttribute('points',pts);
+ gid('vTf').setAttribute('y',wt+18);gid('vTs').setAttribute('y',Math.min(372,it+18));
+ const hh=14+cs/100*54,col=mixc([22,140,135],[217,199,163],cl(1-cs/90,0,1));
+ document.querySelectorAll('.stm').forEach(l=>{l.setAttribute('y2',140-hh);l.setAttribute('stroke',col)});document.querySelectorAll('.lf').forEach(l=>{l.setAttribute('cy',140-hh);l.setAttribute('fill',col)})}
+function tmImp(){const f=(TM.y-2025)/25,d=IM[lang]||IM.en;let L;
+ if(TM.y===2025)L=[d.base];else{const s=TM.S*f,r=TM.R*f;L=[d.sal[s<.3?0:s<1?1:s<1.7?2:3],d.wat[TM.W&&f>=.3?1:0],d.rain[r<=-8?0:r>=8?2:1],d.pri[TM.P]]}
+ gid('tmi').innerHTML=L.map(a=>`<div class="imp"><b>${a[0]}</b><span>→ ${a[1]}</span></div>`).join('')}
+function tmCtl(){const R=TM.R,S=TM.S;gid('cv-r').textContent=(R>0?'+':'')+R+'%';gid('cv-s').textContent=S<.05?t('current'):'+'+S.toFixed(1)+' dS/m';
+ const a=(R+20)/40*100,lo=Math.min(50,a),hi=Math.max(50,a),am='var(--amber)',ln='var(--line)';
+ gid('c-r').style.background=`linear-gradient(90deg,${ln} ${lo}%,${am} ${lo}%,${am} ${hi}%,${ln} ${hi}%)`;
+ gid('c-s').style.background=`linear-gradient(90deg,${am} ${S/2*100}%,${ln} ${S/2*100}%)`;
+ document.querySelectorAll('.seg').forEach(g=>{const v=g.dataset.seg==='w'?TM.W:TM.P;g.style.setProperty('--i',v);g.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===v))})}
+function tmLoop(ts){const c=TM.cur,g=TM.tgt,dt=TM.last?Math.min(.05,(ts-TM.last)/1000):.016;TM.last=ts;
+ const dp=g.p-c.p,st=dt*(.14+Math.abs(dp)*.9);c.p=Math.abs(dp)<=st?g.p:c.p+Math.sign(dp)*st;
+ const ko=1-Math.exp(-dt/.16),ks=['R','S','w','pr'];ks.forEach(k=>{c[k]+=(g[k]-c[k])*ko;if(Math.abs(g[k]-c[k])<.004)c[k]=g[k]});
+ tmRender();if(c.p!==g.p||ks.some(k=>c[k]!==g[k]))TM.raf=requestAnimationFrame(tmLoop);else{TM.raf=0;TM.last=0}}
+function tmGo(){TM.tgt={p:(TM.y-2025)/25,R:TM.R,S:TM.S,w:TM.W,pr:TM.P/2};tmImp();
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches){Object.assign(TM.cur,TM.tgt);tmRender();return}
+ if(!TM.raf){TM.last=0;TM.raf=requestAnimationFrame(tmLoop)}}
+function initTM(){cancelAnimationFrame(TM.raf);TM.raf=0;TM.last=0;if(!gid('tmw'))return;
+ if(!TM.seen){TM.cur={p:0,R:TM.R,S:TM.S,w:TM.W,pr:TM.P/2};TM.seen=true}
+ const c=gid('tmc');c.addEventListener('input',e=>{if(e.target.id==='c-r')TM.R=+e.target.value;if(e.target.id==='c-s')TM.S=+e.target.value;tmCtl();tmGo()});
+ c.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;if(b.parentNode.dataset.seg==='w')TM.W=+b.dataset.v;else TM.P=+b.dataset.v;tmCtl();tmGo()});
+ gid('tax').addEventListener('click',e=>{const b=e.target.closest('[data-y]');if(b){TM.y=+b.dataset.y;tmGo()}});
+ gid('tmr').addEventListener('click',()=>{TM.cur.p=0;tmGo()});
+ tmCtl();tmRender();tmGo()}
+/* ---------- Possible Futures (Results) ---------- */
+const RC={rice:{g:'cereal',sens:.8,wn:.9,nd:.8,lg:0,st:'lo',wl:'hi',nl:'hi'},must:{g:'oil',sens:.5,wn:.35,nd:.6,lg:0,st:'mo',wl:'lo',nl:'mo'},mung:{g:'leg',sens:.65,wn:.45,nd:.3,lg:1,st:'lm',wl:'lo',nl:'lo'},sun:{g:'oil',sens:.45,wn:.2,nd:.7,lg:0,st:'mo',wl:'lo',nl:'mo'},stol:{g:'tol',sens:.05,wn:.3,nd:.4,lg:0,st:'hi',wl:'mo',nl:'lo'},leg:{g:'leg',sens:.5,wn:.35,nd:.25,lg:1,st:'lm',wl:'lo',nl:'lo'}};
+const RN={rice:['Rice','ধান'],must:['Mustard','সরিষা'],mung:['Mung Bean','মুগডাল'],sun:['Sunflower','সূর্যমুখী'],stol:['Salt-tolerant crop','লবণসহনশীল ফসল'],leg:['Legume','ডালজাতীয় ফসল']};
+const OPTS=[['rice','must','mung'],['rice','sun','mung'],['stol','leg','rice']],GC={cereal:'#164A3A',oil:'#D9C7A3',leg:'#168C87',tol:'#b89b5e'},ST_K=['stS','stC','stH','stM'];
+const rn=k=>RN[k][lang==='bn'?1:0];
+const SRCS=[['SRDI','src1','https://srdi.gov.bd/'],['NASA SMAP','src2','https://smap.jpl.nasa.gov/'],['NASA GPM IMERG','src3','https://gpm.nasa.gov/data/imerg'],['NASA POWER','src4','https://power.larc.nasa.gov/'],['MODIS / VIIRS','src5','https://modis.gsfc.nasa.gov/']];
+const glyph=(g,k)=>{const c=GC[g];let d='';for(let i=0;i<9;i++){const x=6+i*9;
+ if(g==='cereal')d+=`<line x1="${x}" x2="${x}" y1="38" y2="${10+(i%3)*3}" stroke="${c}" stroke-width="2"/><line x1="${x}" x2="${x+3}" y1="${14+(i%3)*3}" y2="${10+(i%3)*3}" stroke="${c}"/>`;
+ else if(g==='oil')d+=`<line x1="${x}" x2="${x}" y1="38" y2="14" stroke="${c}" stroke-width="1.6"/><circle cx="${x}" cy="12" r="${k==='sun'?4.5:2.2}" fill="${c}"/>`;
+ else if(g==='leg')d+=`<line x1="${x}" x2="${x}" y1="38" y2="10" stroke="${c}" stroke-width="1.6"/><rect x="${x+1}" y="${16+(i%2)*6}" width="6" height="3" rx="1.5" fill="${c}"/>`;
+ else d+=`<line x1="${x}" x2="${x}" y1="38" y2="12" stroke="${c}" stroke-width="2" stroke-dasharray="3 2"/>`}
+ return `<svg viewBox="0 0 90 40" width="90" height="40" aria-hidden="true">${d}</svg>`};
+const chain=o=>o.map((k,i)=>{const c=RC[k];return `<div class="sb" style="--c:${GC[c.g]}"><div class="gl">${glyph(c.g,k)}</div><div><small class="mono">${t('season')} ${i+1}</small><b>${rn(k)}</b><span class="mono tp">${t('g_'+c.g)}</span></div></div>`+(i<2?`<div class="cn"><svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true"><path d="M7 0V18M2 13L7 19L12 13" fill="none" stroke="#168C87" stroke-width="1.6"/></svg></div>`:'')}).join('');
+function resScen(){const f=(TM.y-2025)/25,r=Math.round(TM.R*f),s=TM.S*f;return{y:TM.y,f,rs:(r>0?'+':'')+r+'%',s,ss:s<.05?t('current'):'+'+s.toFixed(1)+' dS/m',w:TM.W&&f>=.3?1:0}}
+function resInd(o){const sc=resScen(),r=TM.R*sc.f,cs=o.map(k=>RC[k]),av=g=>cs.reduce((a,c)=>a+c[g],0)/cs.length,lg=cs.reduce((a,c)=>a+c.lg,0);
+ const sr=sc.s/2*av('sens'),wr=av('wn')*(sc.w?1:.3)+Math.max(0,-r)/20*.1,sh=50+16*lg+TM.P*3-sc.s/2*20*av('sens');
+ return{sal:sr<.28?0:sr<.45?1:2,wat:wr<.42?0:wr<.6?1:2,soil:sh>=66?0:sh>=58?1:3,nut:av('nd')<.5?1:3}}
+const IND=[['indS','sal'],['indW','wat'],['indSo','soil'],['indN','nut']];
+const rcard=(o,i)=>{const ind=resInd(o),sc=resScen(),lg=o.filter(k=>RC[k].lg).length,cap=[`EC ${(5.8+sc.s).toFixed(1)} dS/m`,`${sc.w?t('wLim'):t('wNor')} · ${sc.rs}`,`${lg} ${t(lg===1?'legS':'legP')}`,'N · P · K: '+t('dv')];
+ return `<article class="card rc rv d${i}"><div class="row" style="justify-content:space-between"><h3 style="font-size:1.3rem">${t('opt')} ${i+1}</h3>${C.scenarioBadge('sim')}</div><div class="chain">${chain(o)}</div><div class="inds">${IND.map((r,j)=>`<div class="ii"><i class="dt d${ind[r[1]]}" style="animation-delay:${.7+i*.15+j*.12}s"></i><div><span class="k">${t(r[0])}</span><b>${t(ST_K[ind[r[1]]])}</b><small class="mono">${cap[j]}</small></div></div>`).join('')}</div><button class="btn btn-p" data-rot="${i}" style="justify-content:center">${t('whyBtn')}</button></article>`};
+function whyHtml(i){const o=OPTS[i],sc=resScen(),lv=v=>t('lv_'+v),names=o.map(rn).join(' → ');
+ return `<button class="x" data-act="close">${t('close')}</button>
+<div class="ds"><h2 style="font-size:1.7rem">${t('whyT')}</h2><span class="mono mute" style="font-size:.76rem">${t('opt')} ${i+1} · ${names}</span><div class="row">${C.scenarioBadge('sim')}${C.scenarioBadge('demoData')}</div></div>
+<div class="ds"><h3>${t('soilCond')}</h3><div class="kv"><span>${t('ec')}</span><b>5.8 dS/m</b></div><div class="kv"><span>pH</span><b>7.2</b></div><div class="row">${C.sourceBadge('SRDI')}${C.scenarioBadge('demoData').replace(t('demoData'),t('dsd'))}</div></div>
+<div class="ds"><h3>${t('envScen')}</h3><div class="kv"><span>${t('rain')}</span><b>${sc.rs}</b></div><div class="kv"><span>${t('salS')}</span><b>${sc.ss}</b></div><div class="kv"><span>${t('wa')}</span><b>${sc.w?t('wLim'):t('wNor')}</b></div><div class="row">${C.scenarioBadge('proj')}${C.sourceBadge('NASA SMAP')}${C.sourceBadge('NASA GPM IMERG')}${C.sourceBadge('NASA POWER')}</div></div>
+<div class="ds"><h3>${t('cropCh')}</h3>${o.map((k,n)=>`<div class="cc"><b>${t('season')} ${n+1} · ${rn(k)}</b><div class="kv"><span>${t('salTol')}</span><i>${lv(RC[k].st)}</i></div><div class="kv"><span>${t('wReq')}</span><i>${lv(RC[k].wl)}</i></div><div class="kv"><span>${t('nReq')}</span><i>${lv(RC[k].nl)}</i></div></div>`).join('')}<small class="mono mute" style="font-size:.68rem">${t('chN')}</small></div>
+<div class="ds"><h3>${t('rotC')}</h3><div class="tx"><b>${t('legC')}</b>${t(i===2?'legL':'legM')}</div><div class="tx"><b>${t('soilC2')}</b>${t(['scL','scM','scH'][TM.P])}</div><div class="tx"><b>${t('seqC')}</b>${t('sq'+i)}</div></div>
+<div class="ds"><h3>${t('srcD')}</h3>${SRCS.map(a=>`<div class="sr2"><span>${C.sourceBadge(a[0])}</span><p>${t(a[1])}</p><a class="btn btn-s vs" href="${a[2]}" target="_blank" rel="noopener noreferrer">${t('viewSrc')}</a></div>`).join('')}</div>
+<div class="ds tr"><p>${t('transp')}</p><p class="mute" style="margin-top:8px">${t('noCert')}</p></div>`}
+P['/results']=()=>{const sc=resScen(),inds=OPTS.map(resInd);return `<div class="view"><div class="wrap exh"><div class="trail rv">${['st0','st1','st3','st4'].map(k=>`<span>${t(k)}</span>`).join('')}<span>${t('tm')}</span><span><b>${t('rsH')}</b></span></div>${C.sectionHeading(t('rsH'),t('rsS'),1).replace('<h1>','<h1 style="font-size:clamp(2.2rem,5vw,4rem)">')}</div>
+<div class="wrap"><div class="dark-panel scs rv"><div class="ch"><div><small>${t('undS')}</small><b>${sc.y} ${t('scen')}</b></div><div><small>${t('sRain')}</small><b>${sc.rs}</b></div><div><small>${t('salS')}</small><b>${sc.ss}</b></div><div><small>${t('wa')}</small><b>${sc.w?t('wLim'):t('wNor')}</b></div><div><small>${t('sPri')}</small><b>${[t('pLo'),t('pMd'),t('pHi')][TM.P]}</b></div></div><div class="row">${C.scenarioBadge('sim')}${C.scenarioBadge('proj')}${C.cta(t('adj'),'#/time-machine','s','style="color:#eef0e8;border-color:#ffffff40;padding:8px 14px"')}</div></div>
+<p class="mute mono rv" style="font-size:.74rem;margin:var(--s3) 0">${t('rsN')}</p>
+<div class="rcg" id="rcg">${OPTS.map(rcard).join('')}</div></div>
+<div class="wrap" style="padding-top:var(--s5)"><div class="card mx rv"><h2 style="font-size:1.4rem;margin-bottom:var(--s3)">${t('cmpH')}</h2><div class="mxg"><div class="h"></div>${OPTS.map((o,i)=>`<div class="h">${t('opt')} ${i+1}</div>`).join('')}${IND.map(r=>`<div><b style="font:600 .9rem var(--h)">${t(r[0])}</b></div>`+inds.map(x=>`<div><i class="dt d${x[r[1]]}"></i>${t(ST_K[x[r[1]]])}</div>`).join('')).join('')}</div></div></div>
+<div class="wrap" style="padding-top:var(--s6)"><p class="rv" style="font:600 clamp(1.3rem,2.4vw,1.9rem)/1.3 var(--h);max-width:40ch;margin-bottom:var(--s4)">${t('recap')}</p><div class="flow rv"><div class="in"><span>${t('fl1')}</span><span>${t('fl2')}</span><span>${t('fl3')}</span></div><span class="ar">→</span><span class="nx am">${t('fl4')}</span><span class="ar">→</span><span class="nx">${t('fl5')}</span><span class="ar">→</span><span class="nx">${t('fl6')}</span></div>
+<div class="row rv" style="margin-top:var(--s5)">${C.cta(t('ctaA'),'#/time-machine','p','style="padding:14px 26px;font-size:1.05rem"')}${C.cta(t('ctaB'),'#/farm','s','style="padding:14px 26px;font-size:1.05rem"')}</div></div>
+<div class="finb rv" style="margin-top:var(--s6)"><h2>${t('tag')}</h2><span class="mono">AgriShift</span><span class="mono" style="color:#b9c9cd">${t('team')}</span></div></div>`};
+function openWhy(i){const d=document.getElementById('drawer');d.innerHTML=whyHtml(i);d.scrollTop=0;drawer(true);const x=d.querySelector('.x');if(x)x.focus({preventScroll:true})}
+function initRes(){const g=document.getElementById('rcg');if(g)g.addEventListener('click',e=>{const b=e.target.closest('[data-rot]');if(b)openWhy(+b.dataset.rot)})}
+/* ---------- Router + events ---------- */
+const route=()=>location.hash.slice(1)||'/';
+function render(){const r=route(),p=P[r]||P['/'];
+ document.documentElement.lang=lang==='bn'?'bn':'en';
+ document.getElementById('nav').innerHTML=C.navigation(r);
+ document.getElementById('app').innerHTML=p();
+ document.getElementById('foot').innerHTML=`<p>${t('foot')}</p>`;
+ document.getElementById('drawer').innerHTML=C.evidenceDrawer();scrollTo(0,0);init();initEx();initFarm();initTM();initRes()}
+function drawer(o){document.getElementById('drawer').classList.toggle('open',o);document.getElementById('scrim').classList.toggle('open',o)}
+addEventListener('hashchange',()=>{drawer(false);clearInterval(EX.pt);EX.pt=null;cancelAnimationFrame(TM.raf);TM.seen=false;render()});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;
+ if(a.dataset.act==='lang'){lang=a.dataset.v;render()}
+ if(a.dataset.act==='evidence')drawer(true);if(a.dataset.act==='close')drawer(false)});
+document.addEventListener('input',e=>{if(!e.target.matches('[data-slider]'))return;const v=+e.target.value;
+ document.querySelectorAll('[data-slider]').forEach(s=>s.value=v);
+ document.querySelectorAll('[id=yr-o]').forEach(o=>o.textContent=v);
+ document.querySelectorAll('#tl span').forEach(s=>s.classList.toggle('on',+s.dataset.y<=v))});
+addEventListener('keydown',e=>{if(e.key==='Escape')drawer(false)});
+render();
+</script>
+</body>
+</html>
