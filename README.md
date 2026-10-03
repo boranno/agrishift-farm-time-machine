@@ -1,5 +1,5 @@
 # 🌱 SmartCrop — The Farm Time Machine
-
+#https://boranno.github.io/agrishift-farm-time-machine/
 > **Explore your farm's future before you plant it.**
 
 SmartCrop is a NASA-powered agricultural decision-support prototype that combines **NASA Earth observation data**, **low-cost local IoT measurements**, and **crop information** to help farmers explore feasible crop-rotation strategies under changing environmental conditions.
