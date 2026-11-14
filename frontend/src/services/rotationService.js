@@ -267,9 +267,28 @@ export const COMPARISON_PLANS = [
   }
 ];
 
+import { request } from './apiClient';
+
 export const getRotationPatterns = (priority = 'all') => {
   if (priority === 'all') return ROTATION_PATTERNS;
   return ROTATION_PATTERNS.filter(p => p.priorities.includes(priority));
 };
 
 export const getComparisonPlans = () => COMPARISON_PLANS;
+
+export const fetchRotationPlanFromApi = async ({ priority = 'all', soilEc = 4.8 } = {}) => {
+  try {
+    return await request('/rotation/plan', {
+      method: 'POST',
+      body: { priority, soilEc },
+      timeout: 2500
+    });
+  } catch (e) {
+    return {
+      priority,
+      soilEc,
+      rotationPatterns: getRotationPatterns(priority),
+      comparisonPlans: COMPARISON_PLANS
+    };
+  }
+};

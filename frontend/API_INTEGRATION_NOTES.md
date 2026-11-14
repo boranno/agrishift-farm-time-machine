@@ -16,7 +16,7 @@ The frontend reads the backend base URL through Vite environment variables:
 
 ## 2. API Endpoints Specification
 
-> **Implementation status:** The endpoints below are planned integration contracts, not live backend endpoints yet. The current soil-report page performs OCR in the browser and saves the reviewed profile in browser `localStorage`; it does not call either soil endpoint below.
+> **Implementation status:** All `/api/v1/*` endpoints documented below are implemented in [`backend/app/api/v1/`](../backend/app/api/v1/) and verified by [`backend/tests/test_api.py`](../backend/tests/test_api.py) (`12 passed`). The frontend services (`weatherService.js`, `farmService.js`, `cropService.js`, `rotationService.js`, `alertService.js`, `modelService.js`) connect through `services/apiClient.js` and automatically fall back to local demonstration/browser data (`localStorage`) when the backend is offline.
 
 ### 2.1 Farm Geolocation & Profiles
 - **`GET /api/v1/farms/current`**

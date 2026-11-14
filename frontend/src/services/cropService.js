@@ -313,4 +313,25 @@ export const evaluateCropSuitability = (crop, soilEc, activeSeason = 'all') => {
   }
 };
 
+import { request } from './apiClient';
+
 export const getCropsCatalog = () => CROPS_CATALOG;
+
+export const fetchCropsSuitabilityFromApi = async ({ soilEc = 4.8, activeSeason = 'all', category = 'all' } = {}) => {
+  try {
+    return await request('/crops/suitability', {
+      method: 'POST',
+      body: { soilEc, activeSeason, category, salinityMethod: 'ECe' },
+      timeout: 2500
+    });
+  } catch (e) {
+    const filtered = category && category !== 'all'
+      ? CROPS_CATALOG.filter(c => c.category === category)
+      : CROPS_CATALOG;
+    return {
+      soilEc,
+      activeSeason,
+      results: filtered.map(c => ({ ...c, suitability: evaluateCropSuitability(c, soilEc, activeSeason) }))
+    };
+  }
+};

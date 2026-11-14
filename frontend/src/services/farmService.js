@@ -117,8 +117,33 @@ export const isWithinBangladesh = (lat, lon) => {
   );
 };
 
+import { request } from './apiClient';
+
+export const fetchCoastalRegionsFromApi = async () => {
+  try {
+    return await request('/regions/bangladesh-coastal', { timeout: 2500 });
+  } catch (e) {
+    return { districts: BANGLADESH_COASTAL_DISTRICTS };
+  }
+};
+
+export const fetchCurrentFarmFromApi = async () => {
+  return await request('/farms/current', { timeout: 2500 });
+};
+
+export const updateCurrentFarmInApi = async (farmPayload) => {
+  return await request('/farms/current', {
+    method: 'PUT',
+    body: farmPayload,
+    timeout: 2500
+  });
+};
+
 export default {
   BANGLADESH_COASTAL_DISTRICTS,
   validateCoordinates,
-  isWithinBangladesh
+  isWithinBangladesh,
+  fetchCoastalRegionsFromApi,
+  fetchCurrentFarmFromApi,
+  updateCurrentFarmInApi
 };

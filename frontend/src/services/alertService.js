@@ -76,12 +76,23 @@ export const INITIAL_ALERTS = [
   }
 ];
 
+import { request } from './apiClient';
+
 export const getAlerts = () => {
   try {
     const saved = localStorage.getItem('agrishift_farmer_alerts');
     if (saved) return JSON.parse(saved);
   } catch (e) {}
   return INITIAL_ALERTS;
+};
+
+export const fetchAlertsFromApi = async () => {
+  try {
+    const data = await request('/alerts', { timeout: 2500 });
+    return data.alerts || INITIAL_ALERTS;
+  } catch (e) {
+    return getAlerts();
+  }
 };
 
 export const saveAlerts = (alerts) => {

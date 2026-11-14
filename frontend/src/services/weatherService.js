@@ -4,6 +4,8 @@
  * Clearly flagged as demonstration data pending live NASA GPM/POWER API in Part 2.
  */
 
+import { request } from './apiClient';
+
 export const DEMO_WEATHER_DATA = {
   location: 'Dacope, Khulna (Lat 22.57°N, Lon 89.51°E)',
   current: {
@@ -51,9 +53,11 @@ export const DEMO_WEATHER_DATA = {
   isDemoData: true
 };
 
-export const getWeatherData = async () => {
-  // Simulates network latency
-  await new Promise(r => setTimeout(r, 200));
-  return DEMO_WEATHER_DATA;
+export const getWeatherData = async (district = 'Khulna', upazila = 'Dacope') => {
+  try {
+    return await request(`/weather/current?district=${encodeURIComponent(district)}&upazila=${encodeURIComponent(upazila)}`, { timeout: 2500 });
+  } catch (e) {
+    return DEMO_WEATHER_DATA;
+  }
 };
 

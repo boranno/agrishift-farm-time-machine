@@ -1,11 +1,10 @@
-# AgriShift — The Farm Time Machine
+# AgriShift — The Farm Time Machine (SmartCrop)
 
 **Event:** [NASA International Space Apps Challenge 2026](https://www.spaceappschallenge.org/) — [Khulna Local Event](https://www.spaceappschallenge.org/2026/local-events/khulna/)  
 **Challenge:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)  
 **Team:** Daydreammer | **Team Lead:** Boranno Golder  
 **Geographic Focus:** Khulna Division, Coastal Bangladesh (AEZ-13 Ganges Tidal Floodplain, AEZ-11, AEZ-14)  
-**Live Application Demo:** [https://agrishift-saline-crop-rotation.vercel.app/](https://agrishift-saline-crop-rotation.vercel.app/)  
-**30-Second Project Showcase Video:** [Watch on YouTube](https://www.youtube.com/watch?v=8gGJASCex5k)
+**Live Application Demo:** [https://agrishift-demo-mnib.vercel.app/](https://agrishift-demo-mnib.vercel.app/)
 
 ---
 
@@ -73,14 +72,14 @@ In strict compliance with NASA Space Apps scientific communication requirements,
 
 ## 5. Machine Learning Pipeline & Verified Validation Benchmarks
 
-Our four LightGBM hazard models (`ml/artifacts/`) were trained on the 23-year Khulna Division panel (`3,321,108` cropland pixel-months) using strict **temporal splitting** (`train <= 2019`, `validation 2020–2021`, `held-out test 2022–2025`), **5-fold `0.1°` (~11 km) spatial block cross-validation**, and **8-storm Leave-One-Storm-Out (LOSO)** validation:
+Our four LightGBM hazard models (`ml/artifacts/`) were trained on the 23-year Khulna Division panel (`3,321,108` cropland pixel-months) using strict **temporal splitting** (`train <= 2019`, `validation 2020–2021`, `held-out test 2022–2025`; and `train 2017–2021`, `val 2022`, `test 2023–2025` for Sentinel-1 SAR inundation) and **8-storm Leave-One-Storm-Out (LOSO)** validation for storm surge:
 
 | Hazard Model | Serialized Artifact (`ml/artifacts/`) | Target Definition & Horizon | Held-Out Test Rows | Verified Held-Out Test Metrics |
 | :--- | :--- | :--- | :--- | :--- |
-| **1. Root-Zone Waterlogging** | `flood_waterlogging_lgbm_h1.joblib` (`91` features, optical + hydro + ERA5-Land, no SAR) | 1-month-ahead root-zone saturation (`swl1_z > 0.75` OR (`MNDWI > -0.15` & `LSWI > 0.15`)) | `565,551` (2022–2025) | **ROC-AUC = `0.9715`** \| **PR-AUC = `0.8726`** (vs. Persistence `0.5835`) \| **Brier = `0.0503`** \| **F1 = `0.8004`** \| **Precision = `85.40%`** \| **Recall = `75.32%`** |
-| **2. Surface Flood Inundation** | `flood_inundation_lgbm_h1.joblib` (`105` features, Sentinel-1 SAR + MODIS + hydro) | 1-month-ahead *gher*-masked SAR open water (`s1_flood_frac > 0.15`, `seasonality < 10`) | `421,155` (2022–2025) | **ROC-AUC = `0.9378`** \| **PR-AUC = `0.4738`** (`+125%` over Persistence `0.2105`) \| **Brier = `0.0295`** \| **F1 = `0.4723`** \| **Recall = `59.97%`** |
-| **3. Cyclone Storm Surge** | `surge_inundation_lgbm.joblib` (`34` features, IBTrACS + SRTM + MERIT + ERA5) | Event-level surge inundation across 8 cyclones (Sidr 2007 to Remal 2024, LOSO CV) | `94,623` (8-storm LOSO) | **Mean LOSO ROC-AUC = `0.8377`** \| **Mean PR-AUC = `0.2788`** (`2.83x` Physics Bathtub `0.0985`) \| **Cyclone Remal (2024): ROC-AUC = `0.9545`, Precision = `93.02%`** \| **Cyclone Roanu (2016): ROC-AUC = `0.9524`, Precision = `97.30%`** |
-| **4. Agricultural Drought** | `drought_lgbm_reg_h1.joblib` (`ΔVCI` regression reconstructed to `VCI(t+1) < 35`) | 1-month-ahead moderate-to-severe vegetation stress (`drought_vci_roll < 35`) | `577,584` (2022–2025) | **ROC-AUC = `0.6512`** (`0.6480` unpruned) \| **PR-AUC = `0.3540`** \| **Brier = `0.1598`** \| **F1 = `0.3943`** \| **Recall = `60.00%`** \| `ΔVCI` **MAE = `24.67`**, $R^2 = +0.0649$ |
+| **1. Root-Zone Waterlogging** | `flood_waterlogging_lgbm_h1.joblib` (`91` features, optical + hydro + ERA5-Land, no SAR) | 1-month-ahead root-zone saturation (`swl2_wet_run >= 2`, `hnd <= 10m`, optical wetness) | `565,551` (2022–2025, `16.66%` pos) | **ROC-AUC = `0.9715`** \| **PR-AUC = `0.8726`** (vs. Persistence `0.3380`) \| **Brier = `0.0503`** \| **F1 = `0.8004`** \| **Precision = `85.40%`** \| **Recall = `75.32%`** |
+| **2. Surface Flood Inundation** | `flood_inundation_lgbm_h1.joblib` (`105` features, Sentinel-1 SAR + MODIS + hydro) | 1-month-ahead *gher*-masked SAR open water (`inund_frac >= 0.15`, `excess >= 0.05`) | `421,155` (2023–2025, `4.21%` pos) | **ROC-AUC = `0.9378`** \| **PR-AUC = `0.4738`** (`+125%` over Persistence `0.2105`) \| **Brier = `0.0295`** \| **F1 = `0.4723`** \| **Recall = `59.97%`** |
+| **3. Cyclone Storm Surge** | `surge_inundation_lgbm.joblib` (`34` features, IBTrACS + SRTM + MERIT + ERA5) | Event-level surge inundation across 8 cyclones (Sidr 2007 to Remal 2024, LOSO CV) | `94,623` (8-storm LOSO) | **Mean LOSO ROC-AUC = `0.8377`** \| **Mean PR-AUC = `0.2788`** (`2.83x` Physics Bathtub `0.0985`) \| **Cyclone Remal (2024): ROC-AUC = `0.9545`, Precision = `93.02%`, F1 = `0.1600`** |
+| **4. Agricultural Drought** | `drought_lgbm_reg_h1.joblib` (`64` features, `ΔVCI` regressor) | 1-month-ahead vegetation stress (`drought_vci_roll < 35`) | `577,584` (2022–2025, `21.33%` pos) | **ROC-AUC = `0.6480`** \| **PR-AUC = `0.3436`** \| **Brier = `0.1621`** \| **F1 = `0.3846`** \| **Recall = `50.15%`** \| `ΔVCI` **MAE = `24.78`**, $R^2 = +0.0630$ |
 
 ### Key Scientific Innovations
 - **Aquaculture (*Gher*) Decontamination:** In Satkhira, Khulna, and Bagerhat, year-round brackish shrimp ponds (*ghers*) exhibit low radar backscatter (`VV < -18 dB`) identical to floodwater. By masking pixels with `JRC Global Surface Water seasonality >= 10` months (`04_export_flood_gee.py`), AgriShift prevents permanent aquaculture from corrupting agricultural flood labels.
@@ -106,8 +105,10 @@ AgriShift transparently distinguishes **implemented browser features**, **offlin
 - **Works 100% Offline:** All 16 routes, bilingual translations (`bn.json`, `en.json`), deterministic suitability & rotation engines, precomputed 10-district ML evaluation benchmarks (`modelService.js`), What-If simulations, manual soil-report entry, and the one-click illustrative soil demo run entirely in the browser using `localStorage` and local fixtures.
 - **Requires Internet Connection:** MapLibre raster basemap tiles (OSM/Esri/CARTO), live place search/reverse geocoding (`nominatim.openstreetmap.org`), MIT external salinity PNG rasters (`mit.edu`), and first-time CDN loading of Tesseract.js/PDF.js for image/PDF OCR (`cdn.jsdelivr.net`).
 
-### C. Planned / Scaffolded Components (`backend/`, `database/`)
-- [`backend/app/main.py`](./backend/app/main.py) provides a FastAPI health check (`GET /health`) and API v1 directory structure. Live `/api/v1/*` model inference endpoints (documented in [`frontend/API_INTEGRATION_NOTES.md`](./frontend/API_INTEGRATION_NOTES.md)), PostgreSQL persistence (`database/`), and automated river/canal IoT salinity telemetry are architectural scaffolds planned for post-hackathon deployment.
+### C. Implemented Backend & Relational Database (`backend/`, `database/`)
+- **FastAPI Backend (`backend/app/`):** Serves `GET /health` and `/api/v1/*` endpoints (`models`, `farms`, `regions`, `soil`, `crops`, `rotation`, `weather`, `alerts`), loading all 4 `.joblib` LightGBM artifacts from `ml/artifacts/` for live hazard inference (`flood_waterlogging`, `flood_inundation`, `surge_inundation`, `drought`) and returning an honest `501 MODEL_NOT_YET_AVAILABLE` for satellite `ECe` prediction.
+- **Relational Database (`database/`, `backend/app/models/`):** Canonical SQL DDL ([`database/schema/001_initial_schema.sql`](./database/schema/001_initial_schema.sql)), seed data ([`database/seeds/001_seed_khulna_agronomy.sql`](./database/seeds/001_seed_khulna_agronomy.sql)), and SQLAlchemy 2.0 ORM models with PostgreSQL (`docker-compose.yml`) and automatic local SQLite fallback (`agrishift_local.db`).
+- **Planned Post-Hackathon Extensions:** Automated river/canal ESP32 IoT salinity telemetry ingestion and live Google Earth Engine server-side feature polling.
 
 ---
 
@@ -135,8 +136,8 @@ AgriShift/
 │   ├── PIPELINE_REVIEW_GUIDE.md
 │   └── requirements.txt
 ├── agronomy/                     # SRDI/BRRI/BARI/BINA Khulna crop database (.xlsx) & validity analysis (.docx)
-├── backend/                      # FastAPI backend service scaffold (/health & API v1 router structure)
-├── database/                     # PostgreSQL relational schema documentation & migration directories
+├── backend/                      # FastAPI backend (/health, /api/v1/* routes, LightGBM loader, SQLAlchemy ORM, pytest suite)
+├── database/                     # PostgreSQL / SQLite relational schema (001_initial_schema.sql) & seed scripts
 ├── docs/                         # NASA data provenance, ML model card, AI disclosure (AI_USE.md) & technical audit
 ├── ARCHITECTURE.md               # Verified system architecture & component connection audit
 ├── DEVELOPMENT_GUIDE.md          # Local development setup instructions
@@ -167,13 +168,15 @@ npm run preview
 
 > **Windows PowerShell Execution Policy Tip:** If PowerShell blocks `npm.ps1`, run `npm.cmd run dev` or `npm.cmd run preview` instead.
 
-### 2. Run the FastAPI Backend Scaffold (Optional)
+### 2. Run the FastAPI Backend & ML Inference Service
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
-Health check endpoint: `http://localhost:8000/health`
+- **Health Check:** `http://localhost:8000/health`
+- **Interactive Swagger UI:** `http://localhost:8000/docs`
+- **Run Backend Test Suite:** `pytest -p no:anyio -v` (12 tests covering ML inference, database persistence, and domain endpoints)
 
 ---
 

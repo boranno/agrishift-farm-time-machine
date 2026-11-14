@@ -11,7 +11,7 @@ export const MODEL_CARD_DATA = {
   modelStatus: 'ALL_HAZARDS_TRAINED_AND_VALIDATED_DROUGHT_FLOOD_SURGE',
   modelName: 'AgriShift Multi-Hazard Early Warning Suite (Drought, Flood/Waterlogging & Storm Surge LightGBM v1.0)',
   modelNameBn: 'এগ্রিশিফট বহুমুখী দুর্যোগ পূর্বাভাস ও জলবায়ু মডেল (খরা, প্লাবন/জলাবদ্ধতা ও জলোচ্ছ্বাস LightGBM v1.0)',
-  version: 'v1.0-validated (Drought 2015–2025 | Flood 2003–2025 | Surge 8-Cyclone LOSO)',
+  version: 'v1.0-validated (Drought 2003–2025 | Flood/Waterlogging 2003–2025 | Surge 8-Cyclone LOSO)',
   targetTask: '1 & 2-Month Ahead Agricultural Drought (VCI < 35), Sentinel-1 Surface Inundation, ERA5 Root-Zone Waterlogging & Cyclone Surge Prediction',
   targetTaskBn: '১ ও ২-মাস অগ্রিম কৃষি খরা (VCI < ৩৫), সারফেস প্লাবন (SAR), মূল-অঞ্চলের জলাবদ্ধতা এবং ঘূর্ণিঝড় জলোচ্ছ্বাস পূর্বাভাস',
   intendedUsers: 'Smallholder farmers, DAE Upazila Agriculture Officers, and BARC/SRDI coastal planners across all 10 districts of Khulna Division',
@@ -45,8 +45,8 @@ export const MODEL_CARD_DATA = {
     ]
   },
   verifiedSurgeBenchmark: {
-    losoSummaryEn: 'Leave-One-Storm-Out (LOSO) Cross-Validation across 8 historical coastal cyclones (94,590 labeled cropland pixels; mean base rate ~3.6%): Sidr (2007), Roanu (2016), Mora (2017), Fani (2019), Amphan (2020), 2022 Unnamed, 2023 Unnamed, Remal (2024)',
-    losoSummaryBn: 'উপকূলের ৮টি ঐতিহাসিক ঘূর্ণিঝড়ে লিভ-ওয়ান-স্টর্ম-আউট (LOSO) কঠোর কালিক যাচাইকরণ (৯৪,৫৯০টি ক্রপল্যান্ড পিক্সেল; প্লাবনের হার ~৩.৬%): সিডর (২০০৭), রোয়ানু (২০১৬), মোরা (২০১৭), ফণী (২০১৯), আম্পান (২০২০), ২০২২ ও ২০২৩ সাইক্লোন, রিমাল (২০২৪)',
+    losoSummaryEn: 'Leave-One-Storm-Out (LOSO) Cross-Validation across 8 historical coastal cyclones (94,623 labeled cropland pixel-events; mean base rate ~3.6%): Sidr (2007), Roanu (2016), Mora (2017), Fani (2019), Amphan (2020), 2022 Unnamed, 2023 Unnamed, Remal (2024)',
+    losoSummaryBn: 'উপকূলের ৮টি ঐতিহাসিক ঘূর্ণিঝড়ে লিভ-ওয়ান-স্টর্ম-আউট (LOSO) কঠোর কালিক যাচাইকরণ (৯৪,৬২৩টি ক্রপল্যান্ড পিক্সেল-ইভেন্ট; প্লাবনের হার ~৩.৬%): সিডর (২০০৭), রোয়ানু (২০১৬), মোরা (২০১৭), ফণী (২০১৯), আম্পান (২০২০), ২০২২ ও ২০২৩ সাইক্লোন, রিমাল (২০২৪)',
     meanRocAuc: 0.8377,
     meanPrAuc: 0.2788,
     meanBathtubPrAuc: 0.0985,
@@ -64,8 +64,8 @@ export const MODEL_CARD_DATA = {
     ]
   },
   verifiedDroughtBenchmark: {
-    splitSummaryEn: 'Strict Temporal Split across 10 Khulna Districts (5km grid): Train 2015–2020 | Val 2021 (Isotonic Calibration & Threshold Tuning) | Held-Out Test 2022–2025 (pos_rate = 21.33%)',
-    splitSummaryBn: 'খুলনা বিভাগের ১০টি জেলায় (৫ কিমি গ্রিড) কঠোর কালিক বিভাজন: প্রশিক্ষণ ২০১৫–২০২০ | যাচাই ২০২১ | চূড়ান্ত পরীক্ষা ২০২২–২০২৫ (খরার হার ২১.৩৩%)',
+    splitSummaryEn: 'Strict Temporal Split across 10 Khulna Districts (1km MODIS grid, 64 features): Train 2003–2019 | Val 2020–2021 (Isotonic Calibration & Threshold Tuning) | Held-Out Test 2022–2025 (577,584 rows, pos_rate = 21.33%)',
+    splitSummaryBn: 'খুলনা বিভাগের ১০টি জেলায় (১ কিমি MODIS গ্রিড, ৬৪টি বৈশিষ্ট্য) কঠোর কালিক বিভাজন: প্রশিক্ষণ ২০০৩–২০১৯ | যাচাই ২০২০–২০২১ | চূড়ান্ত পরীক্ষা ২০২২–২০২৫ (৫,৭৭,৫৮৪ সারি, খরার হার ২১.৩৩%)',
     classificationRows: [
       {
         model: 'Persistence (drought now)',
@@ -101,14 +101,14 @@ export const MODEL_CARD_DATA = {
         isChampion: false
       },
       {
-        model: 'LightGBM (Calibrated, 48 feat)',
-        roc_auc: 0.6512,
-        pr_auc: 0.3540,
-        brier: 0.1598,
-        f1: 0.3943,
-        precision: 0.2936,
-        recall: 0.6000,
-        threshold: 0.2402,
+        model: 'LightGBM (Calibrated, 64 feat)',
+        roc_auc: 0.6480,
+        pr_auc: 0.3436,
+        brier: 0.1621,
+        f1: 0.3846,
+        precision: 0.3119,
+        recall: 0.5015,
+        threshold: 0.2428,
         isChampion: true
       }
     ],
@@ -129,47 +129,47 @@ export const MODEL_CARD_DATA = {
       },
       {
         model: 'LightGBM Delta-VCI Forecast',
-        rmse: 29.8372,
-        mae: 24.6745,
-        r2: 0.0649,
+        rmse: 29.8679,
+        mae: 24.7766,
+        r2: 0.0630,
         isChampion: true
       }
     ]
   },
   plannedTrainingSources: [
-    'MODIS MOD13Q1 (250m) NDVI/EVI & 10-Year Causal Rolling VCI (vci_roll) — Executed & Validated (2015–2025)',
+    'MODIS MOD13A2 (1km) NDVI/EVI & 10-Year Causal Rolling VCI (vci_roll) — Executed & Validated (2003–2025)',
     'MODIS MOD11A2 (1km) Daytime & Nighttime Land Surface Temperature (LST) & TCI — Executed & Validated',
-    'CHIRPS Pentad Precipitation & 3-Month Standardized Precipitation Index (SPI-3) — Executed & Validated',
-    'ERA5-Land Monthly Root-Zone Soil Moisture (0–100cm), Dewpoint & Climatic Water Balance (P − PET) — Executed & Validated',
-    'Sentinel-1 SAR Dual-Pol (VV/VH) Inundation Fraction with JRC Seasonality ≥ 10 Aquaculture Gher Mask (Notebooks 04, 07, 08)',
-    'IBTrACS Cyclone Tracks + Copernicus GTSM Storm Surge Physics & SRTM Elevation (Notebooks 05, 06, 09, 10)'
+    'CHIRPS Daily Precipitation & 3-Month Standardized Precipitation Index (SPI-3) — Executed & Validated',
+    'ERA5-Land Monthly Root-Zone Soil Moisture (0–100cm), PET/ET & Climatic Water Balance — Executed & Validated',
+    'Sentinel-1 SAR (VV) Inundation Fraction with JRC Seasonality ≥ 10 Aquaculture Gher Mask (Notebooks 04, 07, 08)',
+    'IBTrACS Cyclone Tracks + ERA5 Wind/Pressure + MODIS Global Flood DB & SRTM Elevation (Notebooks 05, 06, 09, 10)'
   ],
   plannedTrainingSourcesBn: [
-    'MODIS MOD13Q1 (২৫০মি) NDVI/EVI এবং ১০-বছরের চলমান VCI (২০১৫–২০২৫ ডেটাসেটে প্রশিক্ষিত ও যাচাইকৃত)',
-    'MODIS MOD11A2 (১কিমি) দিন ও রাতের ভূ-পৃষ্ঠের তাপমাত্রা (LST) ও তাপীয় সূচক (TCI) — যাচাইকৃত',
+    'MODIS MOD13A2 (১ কিমি) NDVI/EVI এবং ১০-বছরের চলমান VCI (২০০৩–২০২৫ ডেটাসেটে প্রশিক্ষিত ও যাচাইকৃত)',
+    'MODIS MOD11A2 (১ কিমি) দিন ও রাতের ভূ-পৃষ্ঠের তাপমাত্রা (LST) ও তাপীয় সূচক (TCI) — যাচাইকৃত',
     'CHIRPS বৃষ্টিপাত এবং ৩-মাসের প্রমিত বৃষ্টিপাত সূচক (SPI-3) — যাচাইকৃত',
     'ERA5-Land শিকড় অঞ্চলের মাটির আর্দ্রতা (০–১০০ সেমি) এবং পানির ভারসাম্য (P − PET) — যাচাইকৃত',
     'Sentinel-1 SAR রাডার প্লাবন সূচক এবং JRC মাছের ঘের মাস্কিং পাইপলাইন (নোটবুক ০৪, ০৭, ০৮)',
-    'IBTrACS ঘূর্ণিঝড় গতিপথ + Copernicus GTSM জলোচ্ছ্বাস ও SRTM উচ্চতা পাইপলাইন (নোটবুক ০৫, ০৬, ০৯, ১০)'
+    'IBTrACS ঘূর্ণিঝড় গতিপথ + ERA5 বাতাস/চাপ ও SRTM উচ্চতা পাইপলাইন (নোটবুক ০৫, ০৬, ০৯, ১০)'
   ],
   validationStrategy: {
-    method: 'Strict Temporal Holdout (2022–2025 Test) + Leave-One-District-Out Spatial CV + Leave-One-Storm-Out CV',
-    methodBn: 'কঠোর কালিক পরীক্ষা (২০২২–২০২৫) + জেলাভিত্তিক স্থানিক যাচাইকরণ (LODO) + ঘূর্ণিঝড়ভিত্তিক যাচাইকরণ (LOSO)',
-    descriptionEn: 'To prevent temporal look-ahead leakage and spatial proximity leakage across Khulna Division, all rolling VCI baselines use strictly causal 10-year windows (closed="left"), gap-filling is strictly forward-only (ffill limit=1), probability calibration uses 2021 validation isotonic regression, and spatial generalization is audited across all 10 administrative districts.',
-    descriptionBn: 'ভবিষ্যৎ তথ্যের লিকেজ (Data Leakage) রোধে ১০-বছরের চলমান VCI কেবল অতীতের তথ্যের ওপর হিসাব করা হয়েছে, ২০২১ সালের তথ্যে আইসোটোনিক ক্যালিব্রেশন সম্পন্ন হয়েছে এবং ২০২২–২০২৫ সালের সম্পূর্ণ অদেখা তথ্যে চূড়ান্ত পরীক্ষা করা হয়েছে।'
+    method: 'Strict Temporal Holdout (2022–2025 Test) + 0.1° Spatial Block CV + Leave-One-Storm-Out CV',
+    methodBn: 'কঠোর কালিক পরীক্ষা (২০২২–২০২৫) + স্থানিক ব্লক যাচাইকরণ + ঘূর্ণিঝড়ভিত্তিক যাচাইকরণ (LOSO)',
+    descriptionEn: 'To prevent temporal look-ahead leakage and spatial proximity leakage across Khulna Division, all rolling VCI baselines use strictly causal 10-year windows (closed="left"), gap-filling is strictly forward-only (ffill limit=1), probability calibration uses 2020–2021 validation isotonic regression, and spatial generalization is audited across all 10 administrative districts.',
+    descriptionBn: 'ভবিষ্যৎ তথ্যের লিকেজ (Data Leakage) রোধে ১০-বছরের চলমান VCI কেবল অতীতের তথ্যের ওপর হিসাব করা হয়েছে, ২০২০–২০২১ সালের তথ্যে আইসোটোনিক ক্যালিব্রেশন সম্পন্ন হয়েছে এবং ২০২২–২০২৫ সালের সম্পূর্ণ অদেখা তথ্যে চূড়ান্ত পরীক্ষা করা হয়েছে।'
   },
   targetMetrics: {
-    maeTarget: '24.67 VCI pts (Verified on 2022–2025 Test vs 29.47 Persistence)',
-    rmseTarget: '29.84 VCI pts (Verified R² = +0.0649 vs −0.5193 Persistence)',
-    f1Target: 'PR-AUC 0.3540 | Recall 60.0% | Brier 0.1598 (Verified Test)'
+    maeTarget: '24.78 VCI pts (Verified on 2022–2025 Test vs 29.47 Persistence)',
+    rmseTarget: '29.87 VCI pts (Verified R² = +0.0630 vs −0.5193 Persistence)',
+    f1Target: 'PR-AUC 0.3436 | Recall 50.2% | Brier 0.1621 (Verified Test)'
   },
   knownScientificLimitations: [
     {
       id: 'lim-1',
-      titleEn: '1-Month Lead Atmospheric Stochasticity (Why R² = +0.065 & PR-AUC = 0.354)',
-      titleBn: '১-মাস অগ্রিম আবহাওয়ার প্রাকৃতিক অনিশ্চয়তা (কেন R² = +০.০৬৫ এবং PR-AUC = ০.৩৫৪)',
-      descEn: 'Predicting exact canopy VCI 30 days into the future without future weather data (zero leakage) is bounded by chaotic intraseasonal rainfall variability. Even so, predicting stationary ΔVCI achieves positive R² (+0.0649 vs −0.5193 for Persistence) and captures 60.0% of all real droughts 1 month early (+66% PR-AUC lift over base rate).',
-      descBn: 'ভবিষ্যতের আবহাওয়া না জেনে ৩০ দিন আগে ফসলের সুনির্দিষ্ট অবস্থা পূর্বাভাস দেওয়া প্রাকৃতিকভাবেই কঠিন। তা সত্ত্বেও আমাদের মডেলটি সাধারণ অনুমানের চেয়ে অনেক কম ত্রুটিতে (MAE ২৪.৬৭ বনাম ২৯.৪৭) ৬০% খরা ১ মাস আগেই শনাক্ত করতে সক্ষম।'
+      titleEn: '1-Month Lead Atmospheric Stochasticity (Why R² = +0.063 & PR-AUC = 0.344)',
+      titleBn: '১-মাস অগ্রিম আবহাওয়ার প্রাকৃতিক অনিশ্চয়তা (কেন R² = +০.০৬৩ এবং PR-AUC = ০.৩৪৪)',
+      descEn: 'Predicting exact canopy VCI 30 days into the future without future weather data (zero leakage) is bounded by chaotic intraseasonal rainfall variability. Even so, predicting stationary ΔVCI achieves positive R² (+0.0630 vs −0.5193 for Persistence) and lifts PR-AUC to 0.3436 (+61% over 0.2133 base rate).',
+      descBn: 'ভবিষ্যতের আবহাওয়া না জেনে ৩০ দিন আগে ফসলের সুনির্দিষ্ট অবস্থা পূর্বাভাস দেওয়া প্রাকৃতিকভাবেই কঠিন। তা সত্ত্বেও আমাদের মডেলটি সাধারণ অনুমানের চেয়ে অনেক কম ত্রুটিতে (MAE ২৪.৭৮ বনাম ২৯.৪৭) ৫০.২% খরা ১ মাস আগেই শনাক্ত করতে সক্ষম।'
     },
     {
       id: 'lim-2',
@@ -191,16 +191,16 @@ export const MODEL_CARD_DATA = {
 export const SALINITY_PREDICTION_SPEC = {
   isAvailable: false,
   status: 'HYBRID_SATELLITE_SRDI_MODE',
-  messageEn: '1-Month Ahead Agricultural Drought (LightGBM Calibrated 48-feat) is trained and verified on 2015–2025 Khulna NASA/GEE data. Direct plot-level Soil ECe (dS/m) regression combines SRDI Soil Test Card inputs with NASA SMAP/MODIS evaporative drawdown indicators while ground sensor calibration continues.',
-  messageBn: 'খুলনা বিভাগের ২০১৫–২০২৫ সালের নাসা স্যাটেলাইট তথ্যে ১-মাস অগ্রিম খরা পূর্বাভাস মডেলটি সফলভাবে প্রশিক্ষিত ও যাচাইকৃত। জমির সুনির্দিষ্ট লবণাক্ততা (ECe) নির্ণয়ে এসআরডিআই টেস্ট কার্ড ও নাসা বাষ্পীভবন সূচক একত্রে ব্যবহৃত হচ্ছে।',
+  messageEn: '1-Month Ahead Agricultural Drought (LightGBM Calibrated, 64-feat in committed notebook) is trained and verified on 2003–2025 Khulna NASA/GEE data. Direct plot-level Soil ECe (dS/m) regression is not implemented; soil salinity combines SRDI Soil Test Card inputs with regional MIT projections.',
+  messageBn: 'খুলনা বিভাগের ২০০৩–২০২৫ সালের নাসা স্যাটেলাইট তথ্যে ১-মাস অগ্রিম খরা পূর্বাভাস মডেলটি প্রশিক্ষিত ও যাচাইকৃত। জমির সুনির্দিষ্ট লবণাক্ততা (ECe) নির্ণয়ে এসআরডিআই টেস্ট কার্ড ও আঞ্চলিক MIT মানচিত্র একত্রে ব্যবহৃত হচ্ছে।',
   requiredPipelineInputs: [
     {
-      source: 'MODIS MOD13Q1 + MOD11A2',
-      sourceBn: 'MODIS MOD13Q1 + MOD11A2',
+      source: 'MODIS MOD13A2 + MOD11A2',
+      sourceBn: 'MODIS MOD13A2 + MOD11A2',
       parameter: '10-Yr Causal Rolling VCI, NDVI, EVI & Land Surface Temp (LST)',
       parameterBn: '১০-বছরের চলমান VCI, NDVI এবং ভূ-পৃষ্ঠের তাপমাত্রা (LST)',
-      status: 'Verified & Active in Drought LightGBM Pipeline (48 Features)',
-      statusBn: 'খরা পূর্বাভাস মডেলে সক্রিয় ও যাচাইকৃত (৪৮টি বৈশিষ্ট্য)',
+      status: 'Verified & Active in Drought LightGBM Pipeline (64 Features)',
+      statusBn: 'খরা পূর্বাভাস মডেলে সক্রিয় ও যাচাইকৃত (৬৪টি বৈশিষ্ট্য)',
       ready: true
     },
     {
@@ -244,6 +244,24 @@ export const ML_SUITABILITY_EXPLAINABILITY = {
   ]
 };
 
+import { request } from './apiClient';
+
 export const getModelCardData = () => MODEL_CARD_DATA;
 export const getSalinityPredictionSpec = () => SALINITY_PREDICTION_SPEC;
 export const getMlSuitabilityExplainability = () => ML_SUITABILITY_EXPLAINABILITY;
+
+export const fetchModelsMetadataFromApi = async () => {
+  try {
+    return await request('/models/metadata', { timeout: 3000 });
+  } catch (e) {
+    return { status: 'offline_fallback', models: MODEL_CARD_DATA.models };
+  }
+};
+
+export const predictHazardFromApi = async (hazardType, payload = {}) => {
+  return await request(`/models/${encodeURIComponent(hazardType)}/predict`, {
+    method: 'POST',
+    body: payload,
+    timeout: 5000
+  });
+};
