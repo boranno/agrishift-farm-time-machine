@@ -1,0 +1,465 @@
+# %% [markdown]
+# # AgriShift Drought Dataset - Part 2: Clean, Features, Trend-Robust Labels, Splits
+# Reads the yearly CSVs exported by Part 1 (`agrishift_grid_*.csv`) and writes:
+#   - `agrishift_panel.parquet`            full pixel x month training table (with fixed, detrended, and 10-yr rolling VCI)
+#   - `agrishift_demo_district_month.csv`  small district x month summary for the app
+#
+# ### Scientific & Free-Colab Optimizations Applied:
+# 1. **Low-RAM Loading (< 4 GB Peak RAM):** Downcasts floats to `float32` during CSV ingestion so Free Colab (12.7 GB RAM) never crashes on the 5.33M-row panel.
+# 2. **Strict Causal Gap Filling (Zero Monsoon Look-Ahead Leakage):** Replaces two-sided `interpolate(limit=3)` with strictly causal 1-month forward fill (`ffill(limit=1)`) plus explicit cloud-missingness flags (`ndvi_obs_missing`, `lst_obs_missing`).
+# 3. **Built-In Secular Drift Correction:** Computes both **10-Year Causal Rolling VCI (`vci_roll`, `drought_vci_roll`)** and **District-Month Linearly Detrended VCI (`vci_dt`, `drought_vci_dt`)** alongside legacy fixed VCI (`vci`, `drought_vci`), plus stationary regression delta targets (`target_dvci_roll_next1/2`, `target_dvci_dt_next1/2`).
+# 4. **Top-to-Bottom Execution Order:** Visualization cells appear strictly after the DataFrames they plot are constructed.
+
+# %% Cell 1 - config
+import os
+import gc
+import glob
+import numpy as np
+import pandas as pd
+from scipy import stats
+
+# Mount Google Drive automatically when running in Google Colab
+try:
+    from google.colab import drive
+    if not os.path.ismount("/content/drive"):
+        drive.mount("/content/drive")
+except ImportError:
+    pass
+
+INPUT_DIR = os.environ.get("AGRI_INPUT", "/content/drive/MyDrive/AgriShift_dataset")
+OUT_DIR = os.environ.get("AGRI_OUT", os.path.join(INPUT_DIR, "processed"))
+os.makedirs(OUT_DIR, exist_ok=True)
+
+CROPLAND_CLASSES = {12, 14}   # MODIS IGBP: 12 = croplands, 14 = cropland/natural mosaic
+BASELINE_END = 2019           # climatology & trend fit on 2003..2019 only (no leakage into val/test)
+TRAIN_END = 2019
+VAL_END = 2021                # train: 2003-2019, val: 2020-2021, test: 2022-2025
+
+VCI_DROUGHT = 35.0            # standard FAO/UN-SPIDER agricultural drought threshold
+SPI_DROUGHT = -1.0            # standard WMO moderate meteorological drought threshold
+
+# %% Cell 2 - load yearly CSVs (Free-Colab RAM-optimized float32 ingestion)
+files = sorted(glob.glob(os.path.join(INPUT_DIR, "agrishift_grid_*.csv")))
+if not files:
+    # Auto-discover: search anywhere under MyDrive (subfolders included) for the exported CSVs
+    files = sorted(glob.glob("/content/drive/MyDrive/**/agrishift_grid_*.csv", recursive=True))
+    if files:
+        INPUT_DIR = os.path.dirname(files[0])
+        OUT_DIR = os.environ.get("AGRI_OUT", os.path.join(INPUT_DIR, "processed"))
+        os.makedirs(OUT_DIR, exist_ok=True)
+        print("Auto-discovered CSVs in:", INPUT_DIR)
+if not files:
+    root = "/content/drive/MyDrive"
+    print("Folders visible in MyDrive:", sorted(os.listdir(root))[:40] if os.path.exists(root) else "Drive not mounted")
+assert files, f"No agrishift_grid_*.csv files found in {INPUT_DIR} or anywhere under /content/drive/MyDrive"
+
+DTYPE_MAP = {
+    "lon": "float32", "lat": "float32", "landcover": "float32", "elevation": "float32",
+    "year": "int16", "month": "int8",
+    "NDVI": "float32", "EVI": "float32", "LST_Day": "float32", "LST_Night": "float32",
+    "CHIRPS_rain_mm": "float32", "t2m_K": "float32", "soil_moisture": "float32",
+    "pet_m": "float32", "et_m": "float32",
+}
+
+def _read_csv_low_mem(path):
+    d = pd.read_csv(path, dtype=lambda c: DTYPE_MAP.get(c, None))
+    d["district"] = d["district"].replace({"Jhenaidaha": "Jhenaidah"}).astype("category")
+    return d
+
+df = pd.concat((_read_csv_low_mem(f) for f in files), ignore_index=True)
+print(f"Loaded {len(files)} files -> {len(df):,} rows across {df['district'].nunique()} districts")
+
+# Stable pixel id from rounded coordinates (~1 m precision)
+df["pixel_id"] = df["lon"].round(5).astype(str) + "_" + df["lat"].round(5).astype(str)
+df["date"] = pd.to_datetime(
+    dict(year=df["year"].astype(int), month=df["month"].astype(int), day=1)
+)
+df = df.drop_duplicates(["pixel_id", "date"]).sort_values(["pixel_id", "date"]).reset_index(drop=True)
+
+# %% Cell 3 - physical unit conversions
+df["ndvi"] = (df["NDVI"] * 0.0001).astype("float32")
+df["evi"] = (df["EVI"] * 0.0001).astype("float32")
+df["lst_day"] = (df["LST_Day"] * 0.02 - 273.15).astype("float32")
+df["lst_night"] = (df["LST_Night"] * 0.02 - 273.15).astype("float32")
+df["air_temp"] = (df["t2m_K"] - 273.15).astype("float32")
+df["rain_mm"] = df["CHIRPS_rain_mm"].clip(lower=0).astype("float32")
+# ERA5 evaporation is negative downward flux in meters of water; flip sign and convert to mm
+df["pet_mm"] = (-df["pet_m"] * 1000.0).clip(lower=0).astype("float32")
+df["et_mm"] = (-df["et_m"] * 1000.0).clip(lower=0).astype("float32")
+
+df.loc[~df["ndvi"].between(-0.2, 1.0), "ndvi"] = np.nan
+df.loc[~df["evi"].between(-0.2, 1.0), "evi"] = np.nan
+df.loc[~df["lst_day"].between(0.0, 60.0), "lst_day"] = np.nan
+df.loc[~df["lst_night"].between(0.0, 50.0), "lst_night"] = np.nan
+
+RAW_DROP = ["NDVI", "EVI", "LST_Day", "LST_Night", "CHIRPS_rain_mm", "t2m_K", "pet_m", "et_m"]
+df = df.drop(columns=RAW_DROP)
+gc.collect()
+
+# %% Cell 4 - complete panel (every pixel x every month), then strictly CAUSAL gap fill
+STATIC = ["district", "lon", "lat", "landcover", "elevation"]
+DYN = ["ndvi", "evi", "lst_day", "lst_night", "rain_mm", "air_temp", "soil_moisture", "pet_mm", "et_mm"]
+
+static = df.groupby("pixel_id", sort=False)[STATIC].first()
+dates = pd.date_range(df["date"].min(), df["date"].max(), freq="MS")
+full_index = pd.MultiIndex.from_product([static.index, dates], names=["pixel_id", "date"])
+
+panel = (df.set_index(["pixel_id", "date"])[DYN]
+         .reindex(full_index)
+         .join(static, on="pixel_id")
+         .reset_index())
+del df, static, full_index
+gc.collect()
+
+panel = panel.sort_values(["pixel_id", "date"]).reset_index(drop=True)
+panel["year"] = panel["date"].dt.year.astype("int16")
+panel["month"] = panel["date"].dt.month.astype("int8")
+panel["is_cropland"] = panel["landcover"].isin(CROPLAND_CLASSES).astype("int8")
+
+# Record cloud-missingness flags BEFORE causal forward filling so tree models know when MODIS was cloudy
+panel["ndvi_obs_missing"] = panel["ndvi"].isna().astype("int8")
+panel["lst_obs_missing"] = panel["lst_day"].isna().astype("int8")
+
+# STRICTLY CAUSAL 1-month forward-fill (never uses future months t+1, t+2 to fill month t)
+g_pix = panel.groupby("pixel_id", sort=False)
+for c in ["ndvi", "evi", "lst_day", "lst_night", "et_mm", "pet_mm"]:
+    panel[c] = g_pix[c].ffill(limit=1).astype("float32")
+del g_pix
+gc.collect()
+
+# %% Cell 4b - Exploratory Visualization: Spatial & Climatic Distributions
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_theme(style="whitegrid")
+fig, axes = plt.subplots(1, 3, figsize=(18, 4.8))
+
+unique_cropland = panel.loc[panel["is_cropland"] == 1, ["pixel_id", "elevation", "district"]].drop_duplicates("pixel_id")
+sns.histplot(data=unique_cropland, x="elevation", ax=axes[0], kde=True, color="forestgreen", bins=30)
+axes[0].set_title("Elevation Distribution of Cropland Pixels (10 Districts)")
+axes[0].set_xlabel("Elevation (m above MSL)")
+axes[0].set_ylabel("Pixel Count")
+
+crop_view = panel[panel["is_cropland"] == 1]
+sample_panel = crop_view.sample(n=min(100_000, len(crop_view)), random_state=42)
+sns.lineplot(data=sample_panel, x="month", y="air_temp", ax=axes[1], color="coral", label="Air Temp (C)", errorbar="sd")
+axes[1].set_ylabel("Air Temperature (C)", color="coral")
+axes[1].tick_params(axis="y", labelcolor="coral")
+axes[1].set_title("Khulna Monthly Seasonal Cycle (Temp & Rain)")
+
+ax2 = axes[1].twinx()
+sns.lineplot(data=sample_panel, x="month", y="rain_mm", ax=ax2, color="royalblue", label="Rainfall (mm)", errorbar="sd")
+ax2.set_ylabel("Monthly Rainfall (mm)", color="royalblue")
+ax2.tick_params(axis="y", labelcolor="royalblue")
+ax2.grid(False)
+
+sns.boxplot(data=sample_panel, x="district", y="soil_moisture", ax=axes[2], hue="district", legend=False, palette="Set2")
+axes[2].set_title("Volumetric Soil Moisture across Khulna Districts")
+axes[2].set_xlabel("District")
+axes[2].set_ylabel("ERA5-Land Soil Moisture (m3/m3)")
+axes[2].tick_params(axis="x", rotation=40)
+
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "fig01_spatial_climatic_distributions.png"), dpi=150)
+plt.show()
+del unique_cropland, crop_view, sample_panel
+gc.collect()
+
+# %% Cell 5 - Baseline climatology (2003-2019), Secular Trend Detrending, and 10-Yr Causal Rolling VCI
+def add_baseline(df_in, col, baseline_end=BASELINE_END):
+    base = df_in.loc[df_in["year"] <= baseline_end, ["pixel_id", "month", col]]
+    clim = base.groupby(["pixel_id", "month"], sort=False)[col].agg(
+        mean="mean", std="std", min="min", max="max"
+    ).astype("float32")
+    clim.columns = [f"{col}_clim_{k}" for k in clim.columns]
+    df_in = df_in.merge(clim, on=["pixel_id", "month"], how="left")
+    std = df_in[f"{col}_clim_std"].replace(0, np.nan)
+    df_in[f"{col}_anom"] = (df_in[col] - df_in[f"{col}_clim_mean"]).astype("float32")
+    df_in[f"{col}_z"] = (df_in[f"{col}_anom"] / std).astype("float32")
+    return df_in
+
+for c in ["ndvi", "evi", "lst_day", "rain_mm", "soil_moisture"]:
+    panel = add_baseline(panel, c)
+    if c not in ("ndvi", "lst_day"):
+        panel = panel.drop(columns=[f"{c}_clim_min", f"{c}_clim_max"])
+    gc.collect()
+
+# 5a) Legacy Fixed-Baseline VCI & TCI (2003-2019 min/max; kept for drift comparison)
+ndvi_span = (panel["ndvi_clim_max"] - panel["ndvi_clim_min"]).replace(0, np.nan)
+lst_span = (panel["lst_day_clim_max"] - panel["lst_day_clim_min"]).replace(0, np.nan)
+panel["vci"] = (100.0 * (panel["ndvi"] - panel["ndvi_clim_min"]) / ndvi_span).clip(0, 100).astype("float32")
+panel["tci"] = (100.0 * (panel["lst_day_clim_max"] - panel["lst_day"]) / lst_span).clip(0, 100).astype("float32")
+panel["vhi"] = (0.5 * panel["vci"] + 0.5 * panel["tci"]).astype("float32")
+
+# 5b) District x Month Linearly Detrended NDVI & VCI (fitted strictly on 2003-2019 cropland)
+fit_sub = panel.loc[
+    (panel["is_cropland"] == 1) & (panel["year"] <= BASELINE_END),
+    ["district", "month", "year", "ndvi_anom"]
+].dropna(subset=["ndvi_anom"])
+trend_rows = []
+for (d, m), grp in fit_sub.groupby(["district", "month"], observed=True):
+    if len(grp) >= 12 and grp["year"].nunique() >= 3:
+        slope, intercept = np.polyfit(grp["year"].astype("float64"), grp["ndvi_anom"].astype("float64"), 1)
+    else:
+        slope, intercept = 0.0, 0.0
+    trend_rows.append((d, int(m), float(intercept), float(slope)))
+coef_df = pd.DataFrame(trend_rows, columns=["district", "month", "tr_a", "tr_b"])
+panel = panel.merge(coef_df, on=["district", "month"], how="left")
+panel["ndvi_dt"] = (panel["ndvi"] - (panel["tr_a"] + panel["tr_b"] * panel["year"])).astype("float32")
+panel = panel.drop(columns=["tr_a", "tr_b"])
+del fit_sub, coef_df
+gc.collect()
+
+panel = add_baseline(panel, "ndvi_dt")
+dt_span = (panel["ndvi_dt_clim_max"] - panel["ndvi_dt_clim_min"]).replace(0, np.nan)
+panel["vci_dt"] = (100.0 * (panel["ndvi_dt"] - panel["ndvi_dt_clim_min"]) / dt_span).clip(0, 100).astype("float32")
+panel["vhi_dt"] = (0.5 * panel["vci_dt"] + 0.5 * panel["tci"]).astype("float32")
+panel = panel.drop(columns=["ndvi_dt_clim_min", "ndvi_dt_clim_max", "ndvi_dt_clim_mean", "ndvi_dt_clim_std"])
+gc.collect()
+
+# 5c) 10-Year Strictly Causal Rolling Baseline VCI (`vci_roll`)
+# For each (pixel_id, month) at year y, uses trailing window [y-10, y-1] (shifted by 1 year so current year never leaks)
+panel = panel.sort_values(["pixel_id", "month", "year"]).reset_index(drop=True)
+g_pm = panel.groupby(["pixel_id", "month"], sort=False)["ndvi"]
+roll_min = g_pm.transform(lambda s: s.shift(1).rolling(10, min_periods=4).min()).astype("float32")
+roll_max = g_pm.transform(lambda s: s.shift(1).rolling(10, min_periods=4).max()).astype("float32")
+roll_mean = g_pm.transform(lambda s: s.shift(1).rolling(10, min_periods=4).mean()).astype("float32")
+roll_std = g_pm.transform(lambda s: s.shift(1).rolling(10, min_periods=4).std()).astype("float32")
+
+# For early years (2003-2006) where <4 prior years exist, fall back smoothly to the detrended baseline stats
+roll_span = (roll_max - roll_min).replace(0, np.nan)
+vci_roll_raw = (100.0 * (panel["ndvi"] - roll_min) / roll_span).clip(0, 100).astype("float32")
+panel["vci_roll"] = vci_roll_raw.fillna(panel["vci_dt"]).astype("float32")
+panel["ndvi_roll_z"] = ((panel["ndvi"] - roll_mean) / roll_std.replace(0, np.nan)).fillna(panel["ndvi_dt_z"]).astype("float32")
+panel["vhi_roll"] = (0.5 * panel["vci_roll"] + 0.5 * panel["tci"]).astype("float32")
+del g_pm, roll_min, roll_max, roll_mean, roll_std, roll_span, vci_roll_raw
+gc.collect()
+
+# Re-sort strictly by (pixel_id, date) before any temporal rolling/shift operations
+panel = panel.sort_values(["pixel_id", "date"]).reset_index(drop=True)
+
+# %% Cell 6 - SPI (gamma fit per CHIRPS 0.05-deg cell and calendar month, baseline years only)
+panel["cell"] = (np.floor(panel["lon"] / 0.05).astype(int).astype(str) + "_"
+                 + np.floor(panel["lat"] / 0.05).astype(int).astype(str))
+
+cell_ts = (panel.groupby(["cell", "date"], sort=False)
+           .agg(year=("year", "first"), month=("month", "first"), rain_mm=("rain_mm", "mean"))
+           .reset_index()
+           .sort_values(["cell", "date"]))
+
+
+def compute_spi(series, years, months, scale, baseline_end=BASELINE_END):
+    rolled = series.groupby(cell_ts["cell"], sort=False).transform(
+        lambda s: s.rolling(scale, min_periods=scale).sum()
+    )
+    out = pd.Series(np.nan, index=series.index, dtype="float32")
+    base_mask = (years <= baseline_end) & rolled.notna()
+
+    for (_, _), idx in rolled.groupby([cell_ts["cell"], months], sort=False).groups.items():
+        vals = rolled.loc[idx]
+        b = vals.loc[idx.intersection(rolled[base_mask].index)]
+        if len(b) < 10:
+            continue
+        q_zero = (b == 0).mean()
+        pos = b[b > 0]
+        if len(pos) < 8 or pos.std() == 0:
+            continue
+        shape, _, sc = stats.gamma.fit(pos, floc=0)
+        cdf = np.where(vals <= 0, q_zero,
+                       q_zero + (1.0 - q_zero) * stats.gamma.cdf(np.maximum(vals, 0), shape, loc=0, scale=sc))
+        cdf = np.clip(cdf, 1e-6, 1.0 - 1e-6)
+        out.loc[idx] = stats.norm.ppf(cdf).astype("float32")
+    return out
+
+
+for k in (1, 3, 6):
+    cell_ts[f"spi{k}"] = compute_spi(cell_ts["rain_mm"], cell_ts["year"], cell_ts["month"], scale=k)
+
+panel = panel.merge(cell_ts[["cell", "date", "spi1", "spi3", "spi6"]], on=["cell", "date"], how="left")
+del cell_ts
+gc.collect()
+
+# Re-sort strictly by (pixel_id, date) after merge
+panel = panel.sort_values(["pixel_id", "date"]).reset_index(drop=True)
+
+# %% Cell 7 - Strictly causal time lags, rolling features, and season flags
+g = panel.groupby("pixel_id", sort=False)
+
+for c in ["ndvi", "ndvi_dt", "vci", "vci_dt", "vci_roll", "rain_mm", "soil_moisture_z", "spi3", "lst_day_anom"]:
+    for k in (1, 2, 3):
+        panel[f"{c}_lag{k}"] = g[c].shift(k).astype("float32")
+
+for w in (3, 6):
+    panel[f"rain_roll{w}_sum"] = g["rain_mm"].transform(lambda s: s.rolling(w, min_periods=w).sum()).astype("float32")
+    panel[f"ndvi_roll{w}_mean"] = g["ndvi"].transform(lambda s: s.rolling(w, min_periods=w).mean()).astype("float32")
+    panel[f"vci_roll_ma{w}"] = g["vci_roll"].transform(lambda s: s.rolling(w, min_periods=w).mean()).astype("float32")
+
+# Month-over-month momentum (strictly backward: t minus t-1)
+panel["ndvi_diff1"] = (panel["ndvi"] - panel["ndvi_lag1"]).astype("float32")
+panel["vci_diff1"] = (panel["vci"] - panel["vci_lag1"]).astype("float32")
+panel["vci_dt_diff1"] = (panel["vci_dt"] - panel["vci_dt_lag1"]).astype("float32")
+panel["vci_roll_diff1"] = (panel["vci_roll"] - panel["vci_roll_lag1"]).astype("float32")
+
+# Water balance (P - PET) and its 3-month cumulative sum
+panel["wb_mm"] = (panel["rain_mm"] - panel["pet_mm"]).astype("float32")
+panel["wb_roll3_sum"] = g["wb_mm"].transform(lambda s: s.rolling(3, min_periods=3).sum()).astype("float32")
+panel["et_ratio"] = (panel["et_mm"] / panel["pet_mm"].replace(0, np.nan)).clip(0, 1.5).astype("float32")
+
+# Cyclical month encoding + Bangladesh agricultural seasons
+ang = 2.0 * np.pi * panel["month"] / 12.0
+panel["month_sin"] = np.sin(ang).astype("float32")
+panel["month_cos"] = np.cos(ang).astype("float32")
+panel["is_rabi"] = panel["month"].isin([11, 12, 1, 2, 3]).astype("int8")
+panel["is_kharif1"] = panel["month"].isin([4, 5, 6]).astype("int8")
+panel["is_kharif2"] = panel["month"].isin([7, 8, 9, 10]).astype("int8")
+
+# %% Cell 8 - Current-month drought flags and multi-horizon forecast targets (t+1, t+2)
+# 1) Legacy fixed-baseline labels (kept for diagnostic comparison)
+panel["drought_vci"] = np.where(panel["vci"].isna(), np.nan, (panel["vci"] < VCI_DROUGHT).astype("float32"))
+panel["drought_spi3"] = np.where(panel["spi3"].isna(), np.nan, (panel["spi3"] <= SPI_DROUGHT).astype("float32"))
+panel["drought_any"] = np.where(
+    panel[["drought_vci", "drought_spi3"]].isna().any(axis=1),
+    np.nan,
+    panel[["drought_vci", "drought_spi3"]].max(axis=1),
+).astype("float32")
+
+# 2) Trend-robust detrended labels (`drought_vci_dt`)
+panel["drought_vci_dt"] = np.where(panel["vci_dt"].isna(), np.nan, (panel["vci_dt"] < VCI_DROUGHT).astype("float32"))
+panel["drought_any_dt"] = np.where(
+    panel[["drought_vci_dt", "drought_spi3"]].isna().any(axis=1),
+    np.nan,
+    panel[["drought_vci_dt", "drought_spi3"]].max(axis=1),
+).astype("float32")
+
+# 3) Trend-robust 10-year causal rolling labels (`drought_vci_roll` - primary scientific target)
+panel["drought_vci_roll"] = np.where(panel["vci_roll"].isna(), np.nan, (panel["vci_roll"] < VCI_DROUGHT).astype("float32"))
+panel["drought_any_roll"] = np.where(
+    panel[["drought_vci_roll", "drought_spi3"]].isna().any(axis=1),
+    np.nan,
+    panel[["drought_vci_roll", "drought_spi3"]].max(axis=1),
+).astype("float32")
+
+g = panel.groupby("pixel_id", sort=False)
+for h in (1, 2):
+    # Legacy targets
+    panel[f"target_vci_next{h}"] = g["vci"].shift(-h).astype("float32")
+    panel[f"label_drought_vci_next{h}"] = g["drought_vci"].shift(-h).astype("float32")
+    panel[f"label_drought_any_next{h}"] = g["drought_any"].shift(-h).astype("float32")
+    # Detrended targets + stationary delta
+    panel[f"target_vci_dt_next{h}"] = g["vci_dt"].shift(-h).astype("float32")
+    panel[f"target_dvci_dt_next{h}"] = (panel[f"target_vci_dt_next{h}"] - panel["vci_dt"]).astype("float32")
+    panel[f"label_drought_vci_dt_next{h}"] = g["drought_vci_dt"].shift(-h).astype("float32")
+    # Rolling-baseline targets + stationary delta
+    panel[f"target_vci_roll_next{h}"] = g["vci_roll"].shift(-h).astype("float32")
+    panel[f"target_dvci_roll_next{h}"] = (panel[f"target_vci_roll_next{h}"] - panel["vci_roll"]).astype("float32")
+    panel[f"label_drought_vci_roll_next{h}"] = g["drought_vci_roll"].shift(-h).astype("float32")
+del g
+gc.collect()
+
+# %% Cell 9 - Splits (strict temporal split + 0.1-deg spatial block folds)
+panel["split"] = np.select(
+    [panel["year"] <= TRAIN_END, panel["year"] <= VAL_END],
+    ["train", "val"],
+    default="test",
+)
+bx = np.floor(panel["lon"] / 0.1).astype(int)
+by = np.floor(panel["lat"] / 0.1).astype(int)
+panel["spatial_fold"] = ((bx * 7 + by * 13) % 5).astype("int8")
+
+# %% Cell 10 - Save full panel and district-month demo CSV
+float_cols = panel.select_dtypes("float64").columns
+if len(float_cols) > 0:
+    panel[float_cols] = panel[float_cols].astype("float32")
+panel = panel.drop(columns=["cell"])
+
+panel_path = os.path.join(OUT_DIR, "agrishift_panel.parquet")
+panel.to_parquet(panel_path, index=False)
+print("Saved:", panel_path, f"({os.path.getsize(panel_path) / 1e6:.1f} MB)")
+
+crop_sub = panel[panel["is_cropland"] == 1]
+demo = (crop_sub
+        .groupby(["district", "date", "year", "month"], observed=True)
+        .agg(
+            n_pixels=("pixel_id", "count"),
+            ndvi_mean=("ndvi", "mean"),
+            ndvi_dt_mean=("ndvi_dt", "mean"),
+            vci_mean=("vci", "mean"),
+            vci_dt_mean=("vci_dt", "mean"),
+            vci_roll_mean=("vci_roll", "mean"),
+            tci_mean=("tci", "mean"),
+            vhi_roll_mean=("vhi_roll", "mean"),
+            rain_mm=("rain_mm", "mean"),
+            spi3=("spi3", "mean"),
+            lst_day_c=("lst_day", "mean"),
+            soil_moisture=("soil_moisture", "mean"),
+            soil_moisture_z=("soil_moisture_z", "mean"),
+            drought_share_vci_fixed=("drought_vci", "mean"),
+            drought_share_vci_dt=("drought_vci_dt", "mean"),
+            drought_share_vci_roll=("drought_vci_roll", "mean"),
+            drought_share_any=("drought_any_roll", "mean"),
+        )
+        .reset_index())
+demo_path = os.path.join(OUT_DIR, "agrishift_demo_district_month.csv")
+demo.to_csv(demo_path, index=False)
+print("Saved:", demo_path)
+
+# Standalone target table (cropland only, gzip CSV): identifiers + VCI values + drought labels + forecast targets
+TARGET_COLS = ["pixel_id", "district", "lon", "lat", "date", "year", "month", "split",
+               "ndvi", "vci", "vci_dt", "vci_roll",
+               "drought_vci", "drought_vci_dt", "drought_vci_roll", "drought_spi3", "drought_any_roll"]
+TARGET_COLS += [c for c in panel.columns if c.startswith(("label_", "target_"))]
+TARGET_COLS = [c for c in dict.fromkeys(TARGET_COLS) if c in panel.columns]
+targets_path = os.path.join(OUT_DIR, "agrishift_drought_targets.csv.gz")
+crop_sub[TARGET_COLS].round(4).to_csv(targets_path, index=False, compression="gzip")
+print("Saved:", targets_path, f"({os.path.getsize(targets_path) / 1e6:.1f} MB, {len(crop_sub):,} rows)")
+
+# %% Cell 11 - Sanity & Drift Resolution Report + Visualization
+print("Panel shape:", panel.shape)
+print("Total pixels:", panel["pixel_id"].nunique(), "| Cropland pixels:", crop_sub["pixel_id"].nunique())
+
+chk = crop_sub.groupby("year").agg(
+    ndvi_raw=("ndvi", "mean"),
+    ndvi_dt=("ndvi_dt", "mean"),
+    vci_fixed=("vci", "mean"),
+    vci_dt=("vci_dt", "mean"),
+    vci_roll=("vci_roll", "mean"),
+    drought_fixed=("drought_vci", "mean"),
+    drought_dt=("drought_vci_dt", "mean"),
+    drought_roll=("drought_vci_roll", "mean"),
+    drought_spi3=("drought_spi3", "mean"),
+)
+chk["vci_fixed_at_100"] = crop_sub.groupby("year")["vci"].apply(lambda s: (s == 100).mean())
+chk["vci_roll_at_100"] = crop_sub.groupby("year")["vci_roll"].apply(lambda s: (s == 100).mean())
+print("\n=== Yearly Drift & Target Stabilization Diagnostic (Cropland) ===")
+print(chk.round(3).to_string())
+
+fig, axes = plt.subplots(1, 3, figsize=(18, 4.8))
+axes[0].plot(chk.index, chk["vci_fixed"], "o-", color="crimson", label="Fixed 2003-2019 VCI (drifts up)")
+axes[0].plot(chk.index, chk["vci_dt"], "s-", color="teal", label="Linearly Detrended VCI (`vci_dt`)")
+axes[0].plot(chk.index, chk["vci_roll"], "^-", color="navy", label="10-Yr Causal Rolling VCI (`vci_roll`)")
+axes[0].axvline(2019.5, color="k", ls="--", lw=1, label="Train/Val split (2019)")
+axes[0].set_title("Annual Mean VCI Comparison (2003-2025)")
+axes[0].set_xlabel("Year")
+axes[0].set_ylabel("Mean VCI (0-100)")
+axes[0].legend(fontsize=8)
+
+axes[1].plot(chk.index, chk["drought_fixed"], "o-", color="crimson", label="Fixed VCI < 35 (collapses post-2019)")
+axes[1].plot(chk.index, chk["drought_dt"], "s-", color="teal", label="Detrended VCI < 35 (`drought_vci_dt`)")
+axes[1].plot(chk.index, chk["drought_roll"], "^-", color="navy", label="Rolling VCI < 35 (`drought_vci_roll`)")
+axes[1].axvline(2019.5, color="k", ls="--", lw=1)
+axes[1].set_title("Annual Drought Rate Stabilization (VCI < 35)")
+axes[1].set_xlabel("Year")
+axes[1].set_ylabel("Fraction of Cropland in Drought")
+axes[1].legend(fontsize=8)
+
+sns.boxplot(data=crop_sub.sample(n=min(120_000, len(crop_sub)), random_state=42),
+            x="month", y="vci_roll", hue="month", legend=False, ax=axes[2], palette="crest")
+axes[2].axhline(VCI_DROUGHT, color="crimson", ls="--", lw=1.2, label="Drought Threshold (35)")
+axes[2].set_title("Monthly Distribution of Trend-Robust Rolling VCI")
+axes[2].set_xlabel("Calendar Month")
+axes[2].set_ylabel("Rolling VCI (0-100)")
+axes[2].legend(fontsize=8)
+
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "fig02_trend_and_detrending_diagnostics.png"), dpi=150)
+plt.show()
