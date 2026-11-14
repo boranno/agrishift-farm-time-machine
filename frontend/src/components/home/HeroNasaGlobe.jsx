@@ -163,9 +163,11 @@ export const HeroNasaGlobe = () => {
   const glTextureRef = useRef(null);
   const isTextureLoadedRef = useRef(false);
 
-  // Realistic NASA SMAP Spacecraft Asset Reference
+  // Realistic NASA SMAP Spacecraft Asset & MIT Bangladesh Salinity Raster Asset References
   const smapImgRef = useRef(null);
   const isSmapImgLoadedRef = useRef(false);
+  const mitSalinityImgRef = useRef(null);
+  const isMitSalinityLoadedRef = useRef(false);
 
   useEffect(() => {
     const img = new Image();
@@ -173,6 +175,13 @@ export const HeroNasaGlobe = () => {
     img.onload = () => {
       smapImgRef.current = img;
       isSmapImgLoadedRef.current = true;
+    };
+
+    const mitImg = new Image();
+    mitImg.src = 'https://www.mit.edu/~eltahirgroup/DST_SoilSalinity/data/soil_salinity_2025.png';
+    mitImg.onload = () => {
+      mitSalinityImgRef.current = mitImg;
+      isMitSalinityLoadedRef.current = true;
     };
   }, []);
 
@@ -507,6 +516,7 @@ export const HeroNasaGlobe = () => {
                 if (activeLayerKey === 'precipitation') val = ws.precipitationVal;
                 else if (activeLayerKey === 'temperature') val = ws.tempVal;
                 else if (activeLayerKey === 'vegetation') val = ws.vegetationVal;
+                else if (activeLayerKey === 'salinity') val = ws.soilEc || 4.8;
 
                 const norm = Math.max(0, Math.min(1, (val - activeLayer.min) / (activeLayer.max - activeLayer.min)));
                 const colorIdx = Math.min(activeLayer.colors.length - 1, Math.floor(norm * activeLayer.colors.length));
@@ -522,6 +532,25 @@ export const HeroNasaGlobe = () => {
                 ctx.globalAlpha = 0.80;
                 ctx.stroke();
                 ctx.restore();
+              }
+
+              // Render Georeferenced MIT Bangladesh Soil Salinity Raster onto the 3D Globe when over Bangladesh
+              if (ws.isTargetStation && isMitSalinityLoadedRef.current && mitSalinityImgRef.current) {
+                const nw = toCamCoords(23.46, 88.25, lat0, lon0);
+                const se = toCamCoords(21.55, 92.30, lat0, lon0);
+                if (nw.depth > 0.15 && se.depth > 0.15) {
+                  const x1 = cx + nw.x * R;
+                  const y1 = cy - nw.y * R;
+                  const x2 = cx + se.x * R;
+                  const y2 = cy - se.y * R;
+                  const rw = Math.max(14, x2 - x1);
+                  const rh = Math.max(12, y2 - y1);
+                  ctx.save();
+                  ctx.globalAlpha = activeLayerKey === 'salinity' ? 0.92 : 0.55;
+                  ctx.globalCompositeOperation = 'screen';
+                  ctx.drawImage(mitSalinityImgRef.current, x1, y1, rw, rh);
+                  ctx.restore();
+                }
               }
 
               // TARGET STATION RETICLE: DACOPE, KHULNA ($22.57°N, 89.51°E)
@@ -788,7 +817,8 @@ export const HeroNasaGlobe = () => {
           { key: 'moisture', icon: Droplets, labelEn: 'Soil Moisture', labelBn: 'মাটির আর্দ্রতা', code: 'SMAP L4' },
           { key: 'precipitation', icon: CloudRain, labelEn: 'Precipitation', labelBn: 'বৃষ্টিপাত', code: 'GPM IMERG' },
           { key: 'temperature', icon: ThermometerSun, labelEn: 'Surface Temp', labelBn: 'পৃষ্ঠ তাপ', code: 'POWER / LST' },
-          { key: 'vegetation', icon: Activity, labelEn: 'Vegetation (NDVI)', labelBn: 'ফসলের স্বাস্থ্য', code: 'MODIS NDVI' }
+          { key: 'vegetation', icon: Activity, labelEn: 'Vegetation (NDVI)', labelBn: 'ফসলের স্বাস্থ্য', code: 'MODIS NDVI' },
+          { key: 'salinity', icon: Layers, labelEn: 'Soil Salinity (ECe)', labelBn: 'মাটির লবণাক্ততা', code: 'MIT / SRDI' }
         ].map((item) => {
           const isActive = activeLayerKey === item.key;
           const Icon = item.icon;

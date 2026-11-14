@@ -647,5 +647,35 @@ export const ENVIRONMENTAL_LAYERS = {
     accentColor: '#40916C',
     descriptionEn: 'Monitors chlorophyll absorption and near-infrared reflectance. Detects sub-surface osmotic root stress up to 10 days before crop leaves yellow or wither.',
     descriptionBn: 'পাতার ক্লোরোফিল ও প্রতিফলিত আলো পরিমাপ করে। খালি চোখে পাতা হলুদ হওয়ার আগেই মাটিতে অতিরিক্ত লবণের প্রভাব আগাম শনাক্ত করে।'
+  },
+
+  salinity: {
+    id: 'salinity',
+    nameEn: 'Soil Salinity (MIT / SRDI ECe)',
+    nameBn: 'মাটির লবণাক্ততা (এমআইটি / এসআরডিআই ECe)',
+    tagEn: 'Topsoil Salinity (ECe)',
+    tagBn: 'মাটির লবণাক্ততা (ECe)',
+    satelliteEn: 'MIT Eltahir Group & SRDI Coastal Monitoring',
+    satelliteBn: 'এমআইটি এলতাহির গ্রুপ ও এসআরডিআই উপকূলীয় পর্যবেক্ষণ',
+    datasetId: 'MIT_DST_ECe_2025',
+    productType: 'Geospatial Coastal Soil Salinity Projection (SSP5-8.5)',
+    sensor: 'Hydrological Salt-Intrusion Model + SRDI Ground Truth',
+    unit: 'dS/m',
+    unitLabelEn: 'Electrical Conductivity of Saturated Paste Extract (ECe)',
+    unitLabelBn: 'মাটির তড়িৎ পরিবাহিতা (ECe, dS/m)',
+    min: 0.5,
+    max: 16.0,
+    defaultDacopeValue: '8.6 dS/m',
+    dacopeStatusEn: 'SRDI S3 Strongly Saline (8.6 dS/m)',
+    dacopeStatusBn: 'এসআরডিআই S3 তীব্র লবণাক্ত (৮.৬ dS/m)',
+    observationDate: '2025 Projection (SSP5-8.5 / SRDI Baseline)',
+    observationBasis: 'MIT Eltahir Group & SRDI Khulna Regional Lab',
+    legendMin: '1.0 dS/m (Non-Saline / মিষ্টি)',
+    legendMid: '8.0 dS/m (S3 Saline / মাঝারি-তীব্র)',
+    legendMax: '16.0+ dS/m (Hypersaline / অতি তীব্র)',
+    colors: ['#08306b', '#2171b5', '#41ab5d', '#fdd835', '#fb8c00', '#c62828'],
+    accentColor: '#fb8c00',
+    descriptionEn: 'Visualizes topsoil electrical conductivity (ECe in dS/m) across coastal river deltas, including the georeferenced MIT Eltahir Group Bangladesh coastal salinity raster.',
+    descriptionBn: 'বাংলাদেশের উপকূলীয় অঞ্চলসহ বদ্বীপ অববাহিকায় মাটির লবণাক্ততার (ECe dS/m) বিস্তার এবং এমআইটি রাস্টার ওভারলে প্রদর্শন করে।'
   }
 };

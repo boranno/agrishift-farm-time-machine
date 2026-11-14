@@ -20,6 +20,7 @@ import { getSalinityPredictionSpec } from '../../services/modelService';
 import PageHeader from '../../components/common/PageHeader';
 import DemoBadge from '../../components/common/DemoBadge';
 import ModelUnavailableBanner from '../../components/common/ModelUnavailableBanner';
+import MitSalinityMapOverlay from '../../components/maps/MitSalinityMapOverlay';
 
 export const SalinityPredictionPage = () => {
   const { t, isBangla } = useTranslation();
@@ -27,7 +28,6 @@ export const SalinityPredictionPage = () => {
   const [selectedDate, setSelectedDate] = useState('2026-10-27');
   const [salinityDataset, setSalinityDataset] = useState('model');
   const [salinityYear, setSalinityYear] = useState(2025);
-  const [failedSalinityMapUrl, setFailedSalinityMapUrl] = useState(null);
 
   const spec = getSalinityPredictionSpec();
   const salinityYears = salinityDataset === 'model'
@@ -121,32 +121,18 @@ export const SalinityPredictionPage = () => {
           </span>
         </div>
 
-        <div style={{
-          backgroundColor: '#F3F4F6',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)',
-          overflow: 'hidden',
-          marginBottom: '0.75rem'
-        }}>
-          {failedSalinityMapUrl === salinityMapUrl ? (
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
-              <p>{t('salinityPrediction.mapUnavailable')}</p>
-              <a href={salinityMapUrl} target="_blank" rel="noopener noreferrer">
-                {t('salinityPrediction.openSelectedMap')}
-              </a>
-            </div>
-          ) : (
-            <img
-              key={salinityMapUrl}
-              src={salinityMapUrl}
-              alt={`${t(salinityDataset === 'model'
-                ? 'salinityPrediction.modeledMapAlt'
-                : 'salinityPrediction.observedMapAlt')} ${salinityYear}`}
-              onError={() => setFailedSalinityMapUrl(salinityMapUrl)}
-              style={{ display: 'block', width: '100%', maxHeight: '480px', objectFit: 'contain' }}
-            />
-          )}
-        </div>
+        <MitSalinityMapOverlay
+          salinityMapUrl={salinityMapUrl}
+          salinityYear={salinityYear}
+          salinityDataset={salinityDataset}
+          farmLat={farm?.latitude || 22.5721}
+          farmLon={farm?.longitude || 89.5105}
+          farmLabel={`${localizeFarmValue(farm?.upazila || 'Dacope', isBangla)}, ${localizeFarmValue(farm?.district || 'Khulna', isBangla)}`}
+          isBangla={isBangla}
+          altText={`${t(salinityDataset === 'model'
+            ? 'salinityPrediction.modeledMapAlt'
+            : 'salinityPrediction.observedMapAlt')} ${salinityYear}`}
+        />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
           <span style={{
