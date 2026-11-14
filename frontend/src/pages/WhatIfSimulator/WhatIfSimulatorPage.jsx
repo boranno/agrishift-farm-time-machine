@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SlidersHorizontal,
   CloudRain,
@@ -16,10 +16,21 @@ import {
 import { useTranslation } from '../../hooks/useTranslation';
 import { useFarm } from '../../context/FarmContext';
 import { KHULNA_DISTRICT_PROFILES, getActiveSeasonNasaProfile } from '../../services/nasaTelemetryService';
+import { predictHazardFromApi } from '../../services/modelService';
 import { localizeFarmValue } from '../../utils/farmDisplay';
 import PageHeader from '../../components/common/PageHeader';
 import DemoBadge from '../../components/common/DemoBadge';
 import StatusBadge from '../../components/common/StatusBadge';
+
+// FAO Irrigation & Drainage Paper 29 (Ayers & Westcot 1985 / Maas & Hoffman 1977)
+// Yr = 100 - b * max(0, ECe - a)
+const FAO29_CROP_PARAMS = {
+  'crop-sunflower': { thresholdEcA: 4.8, slopePctPerDsmB: 5.0, maxEc: 8.5, rootBonus: 18 },
+  'crop-brri67': { thresholdEcA: 6.0, slopePctPerDsmB: 9.5, maxEc: 8.0, rootBonus: 14 },
+  'crop-mustard': { thresholdEcA: 3.5, slopePctPerDsmB: 11.0, maxEc: 5.5, rootBonus: 4 },
+  'crop-mungbean': { thresholdEcA: 1.8, slopePctPerDsmB: 20.7, maxEc: 4.0, rootBonus: -4 },
+  'crop-potato': { thresholdEcA: 1.7, slopePctPerDsmB: 12.0, maxEc: 3.5, rootBonus: -25 }
+};
 
 export const WhatIfSimulatorPage = () => {
   const { t, isBangla } = useTranslation();
@@ -35,57 +46,91 @@ export const WhatIfSimulatorPage = () => {
   const [irrigationWaterQuality, setIrrigationWaterQuality] = useState('canal_brackish');
   const [tempDelta, setTempDelta] = useState(1.5); // -2°C to +4°C
   const [selectedCrop, setSelectedCrop] = useState('crop-sunflower');
+  const [liveLgbmVci, setLiveLgbmVci] = useState(null);
+  const [engineMode, setEngineMode] = useState('FAO-29 Maas-Hoffman + LightGBM Surrogate');
 
   const distProfile = KHULNA_DISTRICT_PROFILES[activeDistrict] || KHULNA_DISTRICT_PROFILES.Khulna;
   const currentProfile = getActiveSeasonNasaProfile(activeDistrict, season || 'rabi');
 
-  // Compute heuristic risk response informed by district baseline & LightGBM drought threshold
+  useEffect(() => {
+    let active = true;
+    const baseRainMm = Math.max(5, 85 * (1 + rainfallDelta / 100));
+    const spi3Approx = Number((rainfallDelta / 22).toFixed(2));
+    predictHazardFromApi('drought', {
+      base_vci: distProfile.vciBase,
+      features: {
+        vci_roll: distProfile.vciBase,
+        rain_mm: baseRainMm,
+        spi3_lag1: spi3Approx,
+        air_temp: 28.5 + tempDelta,
+        lst_day_anom: tempDelta
+      }
+    })
+      .then((res) => {
+        if (active && typeof res?.predicted_vci_next1 === 'number') {
+          setLiveLgbmVci(Math.round(res.predicted_vci_next1));
+          setEngineMode('LIVE FastAPI LightGBM + FAO-29 Maas-Hoffman');
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setLiveLgbmVci(null);
+          setEngineMode('FAO-29 Maas-Hoffman + LightGBM Surrogate');
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeDistrict, rainfallDelta, tempDelta, distProfile.vciBase]);
+
+  // Compute FAO-29 (Maas & Hoffman 1977) relative yield & LightGBM-informed stress response
   const computeSimulation = () => {
-    let riskScore = 0; // 0 to 100
+    const cropFao = FAO29_CROP_PARAMS[selectedCrop] || FAO29_CROP_PARAMS['crop-sunflower'];
+    const effectiveEc = simSalinity + (irrigationWaterQuality === 'canal_brackish' ? 0.8 : 0);
 
-    // Salinity impact scaled by district coastal proximity
-    const effectiveEc = simSalinity;
-    if (effectiveEc > 8.0) riskScore += 45;
-    else if (effectiveEc > 5.0) riskScore += 25;
-    else if (effectiveEc > 3.0) riskScore += 10;
+    // Maas & Hoffman (1977) Relative Yield: Yr = 100 - b * max(0, ECe - a)
+    const salinityYieldLossPct = Math.max(0, (effectiveEc - cropFao.thresholdEcA) * cropFao.slopePctPerDsmB);
+    const faoRelativeYieldPct = Math.max(0, Math.min(100, Math.round(100 - salinityYieldLossPct)));
 
-    // Rainfall drought impact
-    if (rainfallDelta < -25) riskScore += 30;
-    else if (rainfallDelta < 0) riskScore += 15;
+    let riskScore = Math.round(100 - faoRelativeYieldPct);
+
+    // Rainfall drought / waterlogging impact
+    if (rainfallDelta < -25) riskScore += 26;
+    else if (rainfallDelta < 0) riskScore += Math.round(Math.abs(rainfallDelta) * 0.6);
+    else if (rainfallDelta > 20 && selectedCrop === 'crop-mungbean') riskScore += 18;
 
     // Heat stress impact (MODIS LST > 35°C threshold)
     if (tempDelta > 2.0) riskScore += 15;
     else if (tempDelta > 0.5) riskScore += 8;
 
-    // Irrigation quality
+    // Irrigation quality & coastal proximity
     if (irrigationWaterQuality === 'canal_brackish') {
-      riskScore += distProfile.zone.startsWith('coastal') ? 25 : 12;
+      riskScore += distProfile.zone.startsWith('coastal') ? 16 : 8;
     } else if (irrigationWaterQuality === 'rainfed_only') {
-      riskScore += 22;
+      riskScore += 18;
     }
 
-    // Crop modifier based on salinity & rooting physics
-    if (selectedCrop === 'crop-sunflower') riskScore -= 20; // resilient deep taproot
-    if (selectedCrop === 'crop-brri67') riskScore -= 15; // salt tolerant boro
-    if (selectedCrop === 'crop-potato') riskScore += 35; // very sensitive
-    if (selectedCrop === 'crop-mungbean') riskScore += rainfallDelta > 20 ? 15 : -5;
-
-    const finalScore = Math.max(10, Math.min(95, riskScore));
+    riskScore = Math.max(8, Math.min(96, riskScore - Math.round(cropFao.rootBonus * 0.4)));
 
     let riskLevel = 'low';
-    if (finalScore > 65) riskLevel = 'critical';
-    else if (finalScore > 40) riskLevel = 'moderate';
+    if (riskScore > 65) riskLevel = 'critical';
+    else if (riskScore > 40) riskLevel = 'moderate';
 
-    // Projected 1-Month Ahead VCI impact
-    const vciImpact = Math.round(distProfile.vciBase + (rainfallDelta * 0.3) - (effectiveEc * 2.2) - (tempDelta * 2.5));
-    const projectedVci = Math.max(12, Math.min(95, vciImpact));
+    // Projected 1-Month Ahead VCI impact (uses live FastAPI LightGBM when connected)
+    const fallbackVci = Math.round(
+      distProfile.vciBase + (rainfallDelta * 0.3) - (effectiveEc * 2.2) - (tempDelta * 2.5)
+    );
+    const projectedVci = liveLgbmVci !== null
+      ? Math.max(10, Math.min(96, Math.round(liveLgbmVci - Math.max(0, effectiveEc - 4.0) * 1.6)))
+      : Math.max(12, Math.min(95, fallbackVci));
 
     return {
-      score: finalScore,
+      score: riskScore,
       level: riskLevel,
       projectedVci,
+      faoRelativeYieldPct,
       waterStressPct: Math.min(100, Math.max(15, Math.round(50 - rainfallDelta * 0.9 + tempDelta * 4))),
-      osmoticShockPct: Math.min(100, Math.round(effectiveEc * 6.2))
+      osmoticShockPct: Math.min(100, Math.round(100 - faoRelativeYieldPct))
     };
   };
 
@@ -282,7 +327,7 @@ export const WhatIfSimulatorPage = () => {
               <Sparkles size={20} color="var(--color-primary-800)" />
               <span>{t('simulator.resultsTitle')}</span>
             </h2>
-            <DemoBadge text="Simulated Impact" />
+            <DemoBadge text={engineMode} />
           </div>
 
           {/* Overall Stress Vulnerability Gauge / Bar */}

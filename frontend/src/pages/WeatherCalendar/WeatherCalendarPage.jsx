@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CloudSun,
   Droplets,
@@ -13,7 +13,8 @@ import {
   Cloud
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { DEMO_WEATHER_DATA } from '../../services/weatherService';
+import { useFarm } from '../../context/FarmContext';
+import { DEMO_WEATHER_DATA, getWeatherData } from '../../services/weatherService';
 import PageHeader from '../../components/common/PageHeader';
 import DemoBadge from '../../components/common/DemoBadge';
 import EmptyState from '../../components/common/EmptyState';
@@ -21,11 +22,26 @@ import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 
 export const WeatherCalendarPage = () => {
   const { t, isBangla } = useTranslation();
+  const { farm } = useFarm();
   const [selectedSeason, setSelectedSeason] = useState('all');
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'weather'
   const [simulatedState, setSimulatedState] = useState('success'); // 'success' | 'loading' | 'nodata'
+  const [weather, setWeather] = useState(DEMO_WEATHER_DATA);
 
-  const weather = DEMO_WEATHER_DATA;
+  useEffect(() => {
+    let mounted = true;
+    getWeatherData(
+      farm?.district || 'Khulna',
+      farm?.upazila || 'Dacope',
+      farm?.latitude || 22.5721,
+      farm?.longitude || 89.5105
+    ).then((data) => {
+      if (mounted && data) setWeather(data);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [farm?.district, farm?.upazila, farm?.latitude, farm?.longitude]);
 
   // Crop calendar events with seasonal stages
   const CALENDAR_CROPS = [
@@ -184,7 +200,7 @@ export const WeatherCalendarPage = () => {
                 <span>{t('weather.sevenDayForecast')}</span>
               </h2>
               <span className="badge badge-neutral" style={{ fontSize: '11px' }}>
-                {weather.location}
+                {weather.location} • {weather.sourceBadge || 'NASA POWER + CHIRPS Baseline'}
               </span>
             </div>
 

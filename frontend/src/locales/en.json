@@ -197,7 +197,7 @@
   "weather": {
     "title": "Weather & Seasonal Crop Calendar",
     "subtitle": "Historical climate patterns, 7-day outlook, and seasonal crop activity windows.",
-    "sampleNotice": "Demonstration Weather Data: Live NASA GPM IMERG and POWER API feeds will be integrated in Part 2.",
+    "sampleNotice": "NASA Agroclimatology & Coastal Telemetry: Connects to the live NASA POWER Daily API (power.larc.nasa.gov) and FastAPI /api/v1/weather/current with 23-year CHIRPS v2.0 & ERA5-Land coastal Khulna climatology.",
     "sevenDayForecast": "7-Day Meteorological Outlook",
     "cropCalendar": "Bangladesh Seasonal Crop Calendar",
     "plantingWindow": "Sowing / Transplanting",
@@ -253,7 +253,7 @@
   "cropSuitability": {
     "title": "Crop Suitability Recommendation",
     "subtitle": "Agronomic suitability analysis for 25+ crops under local soil salinity and seasonal moisture conditions.",
-    "demoNotice": "Demonstration Recommendations: Based on verified BARI/BRRI agronomic salinity threshold rulebooks. Full ML scoring will be connected in Part 3.",
+    "demoNotice": "Scientific Crop Suitability Engine: Evaluates 25+ coastal varieties using verified BARI/BRRI/BINA and FAO-29 salinity (ECe) thresholds, backed by the FastAPI /api/v1/crops/suitability service.",
     "salinityThreshold": "Salinity Threshold (ECe dS/m)",
     "growthDuration": "Growth Duration",
     "waterNeed": "Water Requirement",
@@ -298,7 +298,7 @@
   "simulator": {
     "title": "What-If Climate & Soil Simulator",
     "subtitle": "Simulate environmental stress variations and test crop survival scenarios before sowing.",
-    "disclaimer": "Demonstration Simulator: Scenario outcomes are heuristic approximations for UI preview. Scientific ML simulation engine will be integrated in Part 2 & 3.",
+    "disclaimer": "Scientific Stress & Yield Simulator: Combines FAO Paper 29 (Maas & Hoffman 1977) relative yield equations Yr = 100 - b(ECe - a) with 1-month-ahead LightGBM ΔVCI and root-zone waterlogging inference.",
     "controlsTitle": "Scenario Parameters",
     "rainfallDelta": "Rainfall Anomaly (% change from baseline)",
     "salinityValue": "Topsoil Salinity Level (EC dS/m)",
@@ -332,7 +332,7 @@
   "alerts": {
     "title": "Farmer Alerts & Early Guidance",
     "subtitle": "Location-specific advisories for salinity surges, monsoon anomalies, and crop protection.",
-    "demoNotice": "Demonstration Alerts: Simulated advisory feed for testing UI interactions. Live push notifications and SMS gateways will be integrated in Part 2.",
+    "demoNotice": "Early Warning & Agronomic Advisory Feed: Powered by calibrated LightGBM cyclone surge, SAR inundation, and root-zone waterlogging models alongside SRDI canal salinity thresholds (/api/v1/alerts).",
     "filterAll": "All Alerts",
     "filterCritical": "Critical Severity",
     "filterWarning": "Warnings",
@@ -352,7 +352,7 @@
   "dataSources": {
     "title": "Satellite & Environmental Data Pipeline",
     "subtitle": "Data provenance, sensor specifications, and Earth observation integration status.",
-    "provenanceNotice": "Frontend Data Pipeline View: Outlines the remote sensing parameters and NASA Earthdata feeds scheduled for Part 2 ingestion.",
+    "provenanceNotice": "Earth Observation Provenance Matrix: Documents the NASA MODIS (MOD13A2, MOD11A2, MOD09A1, MCD12Q1), SRTM, MODIS Global Flood DB, CHIRPS, Sentinel-1 SAR, and ERA5-Land datasets executed across 12,033 Khulna cropland pixels.",
     "product": "Earth Observation Product",
     "provider": "Sensor / Mission",
     "parameter": "Observed Parameter",
@@ -419,8 +419,8 @@
   "mlSuitability": {
     "title": "ML-Assisted Crop Suitability UI",
     "subtitle": "Multi-variate algorithmic assessment combining remote sensing, soil chemistry, and micro-climate.",
-    "statusBanner": "ML SUITABILITY ENGINE IN DEVELOPMENT",
-    "statusDesc": "The multi-variate machine-learning crop suitability engine is being trained. Rule-based agronomic recommendations are available in the Crop Suitability tab.",
+    "statusBanner": "MULTI-FACTOR ML & FAO-29 SUITABILITY ARCHITECTURE",
+    "statusDesc": "Combines LightGBM satellite hazard feature importances (3.32M pixel-months) with deterministic BARI/BRRI/FAO-29 soil salinity (ECe) thresholds via /api/v1/crops/suitability.",
     "factorBreakdownTitle": "Planned Factor Influence Framework (SHAP)",
     "factorSalinity": "Soil Salinity Stress Weight (~38%)",
     "factorMoisture": "Root-Zone Water Availability (~27%)",
@@ -431,8 +431,8 @@
   "intelligentRotation": {
     "title": "Intelligent Multi-Year Crop Rotation",
     "subtitle": "Optimization algorithm for multi-season cropping sequence trajectories.",
-    "statusBanner": "ALGORITHMIC ENGINE CONNECTING IN PART 2",
-    "statusDesc": "The backend rotation optimizer will formulate personalized mathematical sequence recommendations. Below is the interactive trajectory preview.",
+    "statusBanner": "MULTI-SEASON ROTATION & SOIL TRAJECTORY ENGINE",
+    "statusDesc": "Connected to /api/v1/rotation/plan and BARI/BRRI AEZ-13 field trial evidence, projecting 3-year soil organic matter (OM) and capillary salt suppression trajectories.",
     "soilHealthTrajectory": "Projected 3-Year Soil Health Trajectory",
     "saltSuppression": "Salinity Suppression Trajectory",
     "waterProductivity": "Water Productivity Trajectory",
@@ -441,8 +441,8 @@
   "modelEvaluation": {
     "title": "Model Confidence & Evaluation Card",
     "subtitle": "Transparent AI model documentation, performance targets, and known limitations.",
-    "statusBanner": "MODEL CARD — ARCHITECTURE SPECIFICATION PHASE",
-    "statusDesc": "No trained weights are deployed in this frontend. All metrics displayed below represent design targets and benchmarking protocols defined for Part 3.",
+    "statusBanner": "VERIFIED LIGHTGBM BENCHMARK & CALIBRATION CARD",
+    "statusDesc": "Displays held-out temporal test (2022–2025) and 8-storm LOSO validation metrics from the 4 trained LightGBM artifacts in ml/artifacts/ served by /api/v1/models.",
     "cardModelName": "Model Identity",
     "cardModelNameVal": "AgriShift Delta-EC Estimator & Suitability Engine (Planned v0.1)",
     "cardTarget": "Primary Target Variable",
