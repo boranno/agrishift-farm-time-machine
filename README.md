@@ -28,7 +28,7 @@ Smallholder farmers across coastal Bangladesh (particularly **Satkhira, Khulna, 
 | # | Member Name | Role & Project Contribution | Department | Institution |
 | :-: | :--- | :--- | :--- | :--- |
 | **1** | **Boranno Golder** | **Team Lead** — IoT & Embedded Systems and Machine Learning | Computer Science and Engineering | Daffodil International University |
-| **2** | **Takia Binte Mijan** | Agricultural Research | Agricultural Science | Daffodil International University |
+| **2** | **Takia Binte Mijan** | Research & Content Lead | Agricultural Science | Daffodil International University |
 | **3** | **Fuad Raj** | Video Editing and Multimedia | Computer Science and Engineering | Eastern University |
 | **4** | **Tanjil Shaiket** | Web Developer | Computer Science and Engineering | Eastern University |
 
