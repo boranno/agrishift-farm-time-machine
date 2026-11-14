@@ -1,4 +1,4 @@
-# AgriShift — The Farm Time Machine (SmartCrop)
+# AgriShift — The Farm Time Machine
 
 **Event:** [NASA International Space Apps Challenge 2026](https://www.spaceappschallenge.org/) — [Khulna Local Event](https://www.spaceappschallenge.org/2026/local-events/khulna/)  
 **Challenge:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)  
@@ -24,6 +24,12 @@ Smallholder farmers across coastal Bangladesh (particularly **Satkhira, Khulna, 
 ---
 
 ## 2. Team Information — Team Daydreammer
+
+<p align="center">
+  <img src="./docs/Team%20Daydreammer.jpg" alt="Team Daydreammer" width="760" />
+  <br />
+  <em>Team Daydreammer</em>
+</p>
 
 | # | Member Name | Role & Project Contribution | Department | Institution |
 | :-: | :--- | :--- | :--- | :--- |

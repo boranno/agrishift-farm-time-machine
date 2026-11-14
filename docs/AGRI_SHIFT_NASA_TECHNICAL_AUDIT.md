@@ -1,6 +1,6 @@
 # AgriShift — Complete Technical & Scientific Audit for NASA Space Apps 2026 Global Judging Video
 
-- **Project:** AgriShift — The Farm Time Machine (SmartCrop)
+- **Project:** AgriShift — The Farm Time Machine
 - **Team:** Daydreammer
 - **Challenge:** Field Shift: Adapting Farms with NASA Data
 - **Geographic Focus:** All 10 administrative districts of Khulna Division, southwestern Bangladesh (`Bagerhat`, `Chuadanga`, `Jessore`, `Jhenaidah`, `Khulna`, `Kushtia`, `Magura`, `Meherpur`, `Narail`, `Satkhira`), with particular agronomic emphasis on the coastal saline polder belt (`AEZ-13`: Khulna, Satkhira, Bagerhat).
