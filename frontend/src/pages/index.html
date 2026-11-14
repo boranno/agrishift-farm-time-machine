@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>AgriShift project versions</title>
+	<style>
+		:root{color-scheme:dark;--bg:#10231c;--panel:#18362b;--text:#f1f5ec;--muted:#b5c8bc;--accent:#a8e063}
+		*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#244b38,var(--bg) 65%);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+		main{width:min(960px,calc(100% - 32px));margin:auto;padding:64px 0}h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.05;margin:0 0 12px;letter-spacing:-.04em}p{color:var(--muted)}.eyebrow{color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.card{display:block;padding:20px;border:1px solid #ffffff20;border-radius:14px;background:var(--panel);color:var(--text);text-decoration:none;transition:border-color .2s ease}.card:hover,.card:focus-visible{border-color:var(--accent);outline:none}.card strong,.card span{display:block}.card strong{font-size:1.05rem}.card span{color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}
+	</style>
+</head>
+<body>
+	<main>
+		<p class="eyebrow">AgriShift</p>
+		<h1>Project pages</h1>
+		<p>Explore the current AgriShift project versions.</p>
+		<section id="pages" class="grid" aria-label="Project pages"></section>
+	</main>
+	<script>
+		const pages = [
+			{ name: 'Version 1', href: 'pages\\Agrishift V1.html' },
+			{ name: 'Version 2', href: 'pages\\Agrishift V2 No OCR.html' },
+			{ name: 'Version 3', href: 'pages\\Agrishift V3.html' },
+			{ name: 'Version 4', href: 'pages\\Agrishift V4.html' },
+			{ name: 'Version 5', href: 'pages\\Agrishift V5.html' },
+			{ name: 'Version 6', href: 'pages\\Agrishift V6.html' },
+			{ name: 'Demo UI', href: 'pages\\Agrishift V7.html' },
+			{ name: 'Version 8', href: 'pages\\Agrishift V8.html' }
+		];
+
+		const list = document.getElementById('pages');
+		pages.forEach(page => {
+			const link = document.createElement('a');
+			link.className = 'card';
+			link.href = page.href;
+			link.title = page.name;
+
+			const title = document.createElement('strong');
+			title.textContent = page.name;
+
+			const url = document.createElement('span');
+			url.textContent = page.href;
+
+			link.append(title, url);
+			list.appendChild(link);
+		});
+	</script>
+</body>
+</html>
