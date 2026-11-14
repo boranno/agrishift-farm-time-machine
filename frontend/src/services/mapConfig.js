@@ -6,7 +6,7 @@
 // Environment variable credentials (if configured by operator)
 export const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY || '';
 export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
-export const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY || '';
+export const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY || 'cb1_50c4_1_6e1af797e391ae72950c3c13';
 export const TERRAIN_DEM_URL = import.meta.env.VITE_TERRAIN_DEM_URL || '';
 const cartoKeyParam = CARTO_API_KEY ? `?key=${encodeURIComponent(CARTO_API_KEY)}` : '';
 

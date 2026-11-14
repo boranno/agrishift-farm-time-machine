@@ -342,7 +342,7 @@ export const MitSalinityMapOverlay = ({
                 style={{ width: 'auto', padding: '0.22rem 0.55rem', fontSize: '11px' }}
                 aria-label="Basemap style"
               >
-                <option value="topo">{isBangla ? 'পরিচ্ছন্ন মানচিত্র (CARTO)' : 'Clean Map (CARTO)'}</option>
+                <option value="topo">{isBangla ? 'CARTO ভয়েজার মানচিত্র' : 'CARTO Voyager Map'}</option>
                 <option value="osm">{isBangla ? 'বাংলাদেশ জেলা মানচিত্র (OSM)' : 'Bangladesh Street Map (OSM)'}</option>
                 <option value="satellite">{isBangla ? 'উপগ্রহ চিত্র (Esri)' : 'Satellite Imagery (Esri)'}</option>
               </select>

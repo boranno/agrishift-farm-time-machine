@@ -23,14 +23,7 @@ import {
   Info,
   Maximize2,
   Sparkles,
-  Loader2,
-  Droplets,
-  CloudRain,
-  ThermometerSun,
-  Activity,
-  Target,
-  Satellite,
-  EyeOff
+  Loader2
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -39,11 +32,6 @@ import {
   BANGLADESH_PRESET,
   TERRAIN_DEM_URL
 } from '../../services/mapConfig';
-import { MIT_SALINITY_PNG_BOUNDS } from './MitSalinityMapOverlay';
-import {
-  GEOGRAPHIC_WATERSHEDS,
-  ENVIRONMENTAL_LAYERS
-} from '../home/globeData';
 import {
   searchPlaces,
   reverseGeocode,
@@ -69,7 +57,7 @@ export const FarmMapViewer = ({
   const isMountedRef = useRef(true);
 
   // Map state
-  const [activeLayerId, setActiveLayerId] = useState('osm');
+  const [activeLayerId, setActiveLayerId] = useState('topo');
   const [is3dPerspective, setIs3dPerspective] = useState(false);
   const [isGlobeView, setIsGlobeView] = useState(false);
   const [mapError, setMapError] = useState(null);
@@ -89,68 +77,6 @@ export const FarmMapViewer = ({
   const [isDrawingBoundary, setIsDrawingBoundary] = useState(false);
   const [boundaryPoints, setBoundaryPoints] = useState(() => Array.isArray(boundary) ? boundary : []);
   const [boundaryAreaStats, setBoundaryAreaStats] = useState(null);
-
-  // MIT Coastal Bangladesh Salinity & NASA Environmental Overlay state
-  const [activeEnvKey, setActiveEnvKey] = useState('salinity'); // 'moisture' | 'precipitation' | 'temperature' | 'vegetation' | 'salinity'
-  const [showDataOverlay, setShowDataOverlay] = useState(true);
-  const [showSalinityOverlay, setShowSalinityOverlay] = useState(true);
-  const [salinityOverlayYear, setSalinityOverlayYear] = useState(2025);
-  const [salinityOverlayOpacity, setSalinityOverlayOpacity] = useState(0.78);
-  const [salinityOverlayRect, setSalinityOverlayRect] = useState({ left: 0, top: 0, width: 0, height: 0, visible: false });
-
-  const activeEnvLayer = ENVIRONMENTAL_LAYERS[activeEnvKey] || ENVIRONMENTAL_LAYERS.salinity || ENVIRONMENTAL_LAYERS.moisture;
-
-  const buildWatershedsGeoJson = useCallback((envKey, envSpec) => {
-    const features = GEOGRAPHIC_WATERSHEDS.map((ws) => {
-      let val = ws.moistureVal;
-      if (envKey === 'precipitation') val = ws.precipitationVal;
-      else if (envKey === 'temperature') val = ws.tempVal;
-      else if (envKey === 'vegetation') val = ws.vegetationVal;
-      else if (envKey === 'salinity') val = ws.soilEc || 4.8;
-
-      const norm = Math.max(0, Math.min(1, (val - envSpec.min) / (envSpec.max - envSpec.min)));
-      const colorIdx = Math.min(envSpec.colors.length - 1, Math.floor(norm * envSpec.colors.length));
-      const fillColor = envSpec.colors[colorIdx];
-
-      return {
-        type: 'Feature',
-        properties: {
-          id: ws.id,
-          nameEn: ws.nameEn,
-          nameBn: ws.nameBn,
-          val,
-          fillColor,
-          isTarget: Boolean(ws.isTargetStation)
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [ws.polygon]
-        }
-      };
-    });
-    return {
-      type: 'FeatureCollection',
-      features
-    };
-  }, []);
-
-  const updateSalinityOverlayPosition = useCallback(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    try {
-      const topLeft = map.project([MIT_SALINITY_PNG_BOUNDS.west, MIT_SALINITY_PNG_BOUNDS.north]);
-      const bottomRight = map.project([MIT_SALINITY_PNG_BOUNDS.east, MIT_SALINITY_PNG_BOUNDS.south]);
-      const width = Math.max(0, bottomRight.x - topLeft.x);
-      const height = Math.max(0, bottomRight.y - topLeft.y);
-      setSalinityOverlayRect({
-        left: topLeft.x,
-        top: topLeft.y,
-        width,
-        height,
-        visible: width > 20 && height > 20
-      });
-    } catch (_) {}
-  }, []);
 
   // Selected layer
   const currentLayer = MAP_LAYERS.find(l => l.id === activeLayerId) || MAP_LAYERS[0];
@@ -232,10 +158,6 @@ export const FarmMapViewer = ({
       markerRef.current = marker;
       mapInstanceRef.current = map;
 
-      const syncOverlayEvents = ['load', 'move', 'zoom', 'rotate', 'pitch', 'resize'];
-      syncOverlayEvents.forEach((evt) => map.on(evt, updateSalinityOverlayPosition));
-      updateSalinityOverlayPosition();
-
       // Handle map load: add GeoJSON source and layers for farm boundary polygon
       map.on('load', () => {
         if (!map.getSource('farm-boundary-source')) {
@@ -281,37 +203,6 @@ export const FarmMapViewer = ({
               'circle-color': '#166534',
               'circle-stroke-width': 2,
               'circle-stroke-color': '#FFFFFF'
-            }
-          });
-        }
-
-        // NASA Environmental Watershed Overlays Source & Layers
-        if (!map.getSource('nasa-watersheds-source')) {
-          map.addSource('nasa-watersheds-source', {
-            type: 'geojson',
-            data: showDataOverlay
-              ? buildWatershedsGeoJson(activeEnvKey, activeEnvLayer)
-              : { type: 'FeatureCollection', features: [] }
-          });
-
-          map.addLayer({
-            id: 'nasa-watersheds-fill',
-            type: 'fill',
-            source: 'nasa-watersheds-source',
-            paint: {
-              'fill-color': ['get', 'fillColor'],
-              'fill-opacity': 0.35
-            }
-          });
-
-          map.addLayer({
-            id: 'nasa-watersheds-line',
-            type: 'line',
-            source: 'nasa-watersheds-source',
-            paint: {
-              'line-color': ['get', 'fillColor'],
-              'line-width': ['case', ['get', 'isTarget'], 2.2, 1.2],
-              'line-opacity': 0.85
             }
           });
         }
@@ -439,18 +330,6 @@ export const FarmMapViewer = ({
     }
   }, [boundaryPoints]);
 
-  // 3b. Synchronize NASA Environmental Watershed Layers when activeEnvKey or showDataOverlay changes
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    const src = map.getSource('nasa-watersheds-source');
-    if (src) {
-      src.setData(showDataOverlay
-        ? buildWatershedsGeoJson(activeEnvKey, activeEnvLayer)
-        : { type: 'FeatureCollection', features: [] });
-    }
-  }, [activeEnvKey, activeEnvLayer, showDataOverlay, buildWatershedsGeoJson]);
-
   // 4. Handle Layer Style Switching
   const handleLayerSwitch = (layerId) => {
     setActiveLayerId(layerId);
@@ -509,36 +388,6 @@ export const FarmMapViewer = ({
             'circle-color': '#166534',
             'circle-stroke-width': 2,
             'circle-stroke-color': '#FFFFFF'
-          }
-        });
-      }
-
-      if (!map.getSource('nasa-watersheds-source')) {
-        map.addSource('nasa-watersheds-source', {
-          type: 'geojson',
-          data: showDataOverlay
-            ? buildWatershedsGeoJson(activeEnvKey, activeEnvLayer)
-            : { type: 'FeatureCollection', features: [] }
-        });
-
-        map.addLayer({
-          id: 'nasa-watersheds-fill',
-          type: 'fill',
-          source: 'nasa-watersheds-source',
-          paint: {
-            'fill-color': ['get', 'fillColor'],
-            'fill-opacity': 0.35
-          }
-        });
-
-        map.addLayer({
-          id: 'nasa-watersheds-line',
-          type: 'line',
-          source: 'nasa-watersheds-source',
-          paint: {
-            'line-color': ['get', 'fillColor'],
-            'line-width': ['case', ['get', 'isTarget'], 2.2, 1.2],
-            'line-opacity': 0.85
           }
         });
       }
@@ -1006,34 +855,6 @@ export const FarmMapViewer = ({
           {/* Quick Presets */}
           <button
             type="button"
-            onClick={() => {
-              setShowSalinityOverlay(prev => !prev);
-              setTimeout(updateSalinityOverlayPosition, 50);
-            }}
-            className={`btn btn-sm ${showSalinityOverlay ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '11px', padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-            title={isBangla ? 'বাংলাদেশের উপকূলীয় মাটির লবণাক্ততা (MIT ECe) ওভারলে' : 'Toggle Bangladesh Coastal Soil Salinity (MIT ECe) Overlay'}
-          >
-            <Layers size={13} />
-            <span>{isBangla ? 'লবণাক্ততা ওভারলে' : 'Salinity Overlay'}</span>
-          </button>
-
-          {showSalinityOverlay && (
-            <select
-              value={salinityOverlayYear}
-              onChange={e => setSalinityOverlayYear(Number(e.target.value))}
-              className="form-select"
-              style={{ width: 'auto', padding: '0.2rem 0.45rem', fontSize: '11px' }}
-              title={isBangla ? 'লবণাক্ততা প্রক্ষেপণ বছর' : 'Salinity Projection Year'}
-            >
-              {[2023, 2025, 2030, 2035, 2040, 2045, 2050].map(yr => (
-                <option key={yr} value={yr}>{yr}</option>
-              ))}
-            </select>
-          )}
-
-          <button
-            type="button"
             onClick={zoomToBangladesh}
             className="btn btn-secondary btn-sm"
             style={{ fontSize: '11px', padding: '0.35rem 0.6rem' }}
@@ -1165,231 +986,12 @@ export const FarmMapViewer = ({
         </div>
       )}
 
-      {/* NASA Earth Observation Layer Pills Bar (Globe Section Overlays) */}
-      <div
-        style={{
-          padding: '0.6rem 1rem',
-          background: 'linear-gradient(135deg, #064E3B 0%, #0F766E 100%)',
-          borderBottom: '1px solid var(--color-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          gap: '0.45rem'
-        }}
-      >
-        {[
-          { key: 'moisture', icon: Droplets, labelEn: 'Soil Moisture', labelBn: 'মাটির আর্দ্রতা', code: 'SMAP' },
-          { key: 'precipitation', icon: CloudRain, labelEn: 'Precipitation', labelBn: 'বৃষ্টিপাত', code: 'GPM' },
-          { key: 'temperature', icon: ThermometerSun, labelEn: 'Surface Temp', labelBn: 'পৃষ্ঠ তাপ', code: 'POWER' },
-          { key: 'vegetation', icon: Activity, labelEn: 'Vegetation (NDVI)', labelBn: 'ফসলের স্বাস্থ্য', code: 'MODIS' },
-          { key: 'salinity', icon: Layers, labelEn: 'Soil Salinity (ECe)', labelBn: 'মাটির লবণাক্ততা', code: 'MIT/SRDI' }
-        ].map((item) => {
-          const isActive = activeEnvKey === item.key;
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => {
-                setActiveEnvKey(item.key);
-                setShowDataOverlay(true);
-                if (item.key === 'salinity') {
-                  setShowSalinityOverlay(true);
-                  setTimeout(updateSalinityOverlayPosition, 50);
-                }
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.36rem 0.75rem',
-                borderRadius: '999px',
-                fontSize: '11px',
-                fontWeight: isActive ? '700' : '500',
-                backgroundColor: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.14)',
-                color: isActive ? '#0B2239' : '#E2F5EA',
-                border: isActive ? `1.5px solid ${activeEnvLayer.accentColor}` : '1px solid rgba(255, 255, 255, 0.25)',
-                boxShadow: isActive ? '0 3px 10px rgba(0, 0, 0, 0.22)' : 'none',
-                cursor: 'pointer',
-                transition: 'all 180ms ease'
-              }}
-            >
-              <Icon size={13} color={isActive ? activeEnvLayer.accentColor : '#86EFAC'} />
-              <span>{isBangla ? item.labelBn : item.labelEn}</span>
-              <span
-                style={{
-                  fontSize: '9px',
-                  opacity: isActive ? 0.85 : 0.7,
-                  padding: '1px 5px',
-                  borderRadius: '3px',
-                  backgroundColor: isActive ? 'rgba(11, 34, 57, 0.08)' : 'rgba(255, 255, 255, 0.12)'
-                }}
-              >
-                {item.code}
-              </span>
-            </button>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => {
-            const next = !showDataOverlay;
-            setShowDataOverlay(next);
-            setShowSalinityOverlay(next);
-          }}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            padding: '0.36rem 0.7rem',
-            borderRadius: '999px',
-            fontSize: '11px',
-            fontWeight: '600',
-            backgroundColor: showDataOverlay ? 'rgba(16, 185, 129, 0.28)' : 'rgba(255, 255, 255, 0.12)',
-            color: showDataOverlay ? '#A7F3D0' : '#D1D5DB',
-            border: '1px solid rgba(255, 255, 255, 0.28)',
-            cursor: 'pointer'
-          }}
-        >
-          {showDataOverlay ? <Eye size={13} color="#86EFAC" /> : <EyeOff size={13} />}
-          <span>{isBangla ? (showDataOverlay ? 'ওভারলে: চালু' : 'ওভারলে: বন্ধ') : (showDataOverlay ? 'Overlay: ON' : 'Overlay: OFF')}</span>
-        </button>
-      </div>
-
       {/* MapLibre GL Canvas Container */}
-      <div style={{ position: 'relative', width: '100%', height: '480px', backgroundColor: '#E2E8DF', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', height: '440px', backgroundColor: '#E2E8DF' }}>
         <div
           ref={mapContainerRef}
           style={{ width: '100%', height: '100%', cursor: isDrawingBoundary ? 'crosshair' : 'default' }}
         />
-
-        {/* Synchronized Georeferenced MIT Coastal Bangladesh Salinity Overlay */}
-        {showDataOverlay && showSalinityOverlay && salinityOverlayRect.visible && (
-          <img
-            src={salinityOverlayYear === 2023
-              ? 'https://www.mit.edu/~eltahirgroup/DST_SoilSalinity/data/observed_soil_salinity_2023.png'
-              : `https://www.mit.edu/~eltahirgroup/DST_SoilSalinity/data/soil_salinity_${salinityOverlayYear}.png`}
-            alt={`MIT Bangladesh Soil Salinity Overlay ${salinityOverlayYear}`}
-            style={{
-              position: 'absolute',
-              left: `${salinityOverlayRect.left}px`,
-              top: `${salinityOverlayRect.top}px`,
-              width: `${salinityOverlayRect.width}px`,
-              height: `${salinityOverlayRect.height}px`,
-              pointerEvents: 'none',
-              opacity: activeEnvKey === 'salinity' ? salinityOverlayOpacity : salinityOverlayOpacity * 0.65,
-              mixBlendMode: activeLayerId === 'satellite' ? 'screen' : 'multiply',
-              filter: 'contrast(1.06) saturate(1.1)',
-              zIndex: 2,
-              userSelect: 'none'
-            }}
-          />
-        )}
-
-        {/* SCIENTIFIC TELEMETRY CARD 1: ACTIVE NASA / MIT OBSERVATION PRODUCT (Top-Left) */}
-        {showDataOverlay && (
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            left: '12px',
-            width: 'min(265px, 78vw)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(8px)',
-            padding: '0.6rem 0.8rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
-            zIndex: 5
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem', marginBottom: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  backgroundColor: activeEnvLayer.accentColor,
-                  boxShadow: `0 0 6px ${activeEnvLayer.accentColor}`
-                }} />
-                <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: '#0B2239' }}>
-                  {activeEnvLayer.datasetId}
-                </span>
-              </div>
-              <span style={{
-                fontSize: '9px',
-                fontWeight: '600',
-                padding: '1px 6px',
-                borderRadius: '999px',
-                backgroundColor: 'rgba(234, 88, 12, 0.12)',
-                color: '#C2410C'
-              }}>
-                {isBangla ? 'ক্যালিব্রেটেড প্রিভিউ' : 'Calibration Preview'}
-              </span>
-            </div>
-
-            <div style={{ fontSize: '16px', fontWeight: '800', color: '#0F2942', lineHeight: 1.2 }}>
-              {activeEnvLayer.defaultDacopeValue}
-            </div>
-
-            <div style={{ fontSize: '10.5px', color: '#374151', marginTop: '2px', fontWeight: '500' }}>
-              {isBangla ? activeEnvLayer.dacopeStatusBn : activeEnvLayer.dacopeStatusEn}
-            </div>
-
-            <div style={{ fontSize: '9px', color: '#6B7280', marginTop: '4px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '3px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
-              <span>{isBangla ? activeEnvLayer.satelliteBn : activeEnvLayer.satelliteEn}</span>
-              {showSalinityOverlay && (
-                <input
-                  type="range"
-                  min="0.25"
-                  max="1.0"
-                  step="0.05"
-                  value={salinityOverlayOpacity}
-                  onChange={e => setSalinityOverlayOpacity(parseFloat(e.target.value))}
-                  style={{ width: '48px', accentColor: 'var(--color-primary-800)' }}
-                  title={isBangla ? 'ওভারলে স্বচ্ছতা' : 'Overlay Opacity'}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* SCIENTIFIC TELEMETRY CARD 2: DACOPE / ACTIVE GROUND STATION (Bottom-Left) */}
-        {showDataOverlay && (
-          <div style={{
-            position: 'absolute',
-            bottom: '36px',
-            left: '12px',
-            width: 'min(255px, 78vw)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(8px)',
-            padding: '0.55rem 0.75rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
-            zIndex: 5
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
-              <Target size={13} color="#059669" />
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#064E3B' }}>
-                {isBangla ? `${upazila}, ${district} (লক্ষ্য স্টেশন)` : `${upazila} Ground Station (Focus)`}
-              </span>
-            </div>
-
-            <div style={{ fontSize: '10px', color: '#374151', lineHeight: 1.4 }}>
-              <span>Coord: {Number(latitude).toFixed(2)}°N, {Number(longitude).toFixed(2)}°E</span>
-              <br />
-              <strong style={{ color: '#047857' }}>
-                {isBangla ? activeEnvLayer.tagBn : activeEnvLayer.tagEn}:
-              </strong>{' '}
-              {activeEnvLayer.defaultDacopeValue}
-            </div>
-
-            <div style={{ fontSize: '9px', color: '#6B7280', marginTop: '2px' }}>
-              {isBangla ? 'গঙ্গা জোয়ারভাটা প্লাবনভূমি • এসআরডিআই বেসলাইন' : 'Ganges Tidal Floodplain • SRDI Baseline'}
-            </div>
-          </div>
-        )}
 
         {/* Fallback Display if WebGL or Map fails */}
         {mapError && (
@@ -1449,41 +1051,6 @@ export const FarmMapViewer = ({
           )}
         </div>
       </div>
-
-      {/* Active NASA / MIT Layer Color Scale Legend Bar */}
-      {showDataOverlay && (
-        <div style={{
-          padding: '0.55rem 1rem',
-          backgroundColor: '#064E3B',
-          color: '#FFFFFF',
-          borderTop: '1px solid rgba(255,255,255,0.15)',
-          fontSize: '10.5px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Satellite size={13} color="#86EFAC" />
-              <span style={{ fontWeight: '700' }}>
-                {isBangla ? activeEnvLayer.nameBn : activeEnvLayer.nameEn} ({activeEnvLayer.unit})
-              </span>
-            </div>
-            <span style={{ color: '#D1FAE5', fontSize: '10px' }}>
-              {activeEnvLayer.datasetId} • {activeEnvLayer.productType}
-            </span>
-          </div>
-          <div style={{
-            height: '6px',
-            width: '100%',
-            borderRadius: '4px',
-            background: `linear-gradient(to right, ${activeEnvLayer.colors.join(', ')})`,
-            marginBottom: '3px'
-          }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: '#A7F3D0' }}>
-            <span>{activeEnvLayer.legendMin}</span>
-            <span>{activeEnvLayer.legendMid}</span>
-            <span>{activeEnvLayer.legendMax}</span>
-          </div>
-        </div>
-      )}
 
       {/* Map Attribution and Scientific Disclosure Footer */}
       <div style={{
