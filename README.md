@@ -4,7 +4,7 @@
 **Challenge:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)  
 **Team:** Daydreammer | **Team Lead:** Boranno Golder  
 **Geographic Focus:** Khulna Division, Coastal Bangladesh (AEZ-13 Ganges Tidal Floodplain, AEZ-11, AEZ-14)  
-**Live Application Demo:** [https://agrishift-demo-mnib.vercel.app/](https://agrishift-demo-mnib.vercel.app/)
+**Live Application Demo:** [https://agrishift-saline-crop-rotation.vercel.app/](https://agrishift-saline-crop-rotation.vercel.app/)
 
 ---
 
