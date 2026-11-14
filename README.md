@@ -1,4 +1,4 @@
-# AgriShift — The Farm Time Machine (SmartCrop)
+# AgriShift — The Farm Time Machine
 
 **Event:** [NASA International Space Apps Challenge 2026](https://www.spaceappschallenge.org/) — [Khulna Local Event](https://www.spaceappschallenge.org/2026/local-events/khulna/)  
 **Challenge:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)  
